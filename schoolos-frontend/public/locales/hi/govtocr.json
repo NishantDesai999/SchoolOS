@@ -1,0 +1,18 @@
+{
+  "title": "Govt Circular OCR",
+  "upload_title": "Upload Government Circular",
+  "ocr_result_title": "Extracted Fee Data",
+  "circular_number": "Circular Number",
+  "calendar_year": "Applicable Year",
+  "upload_instruction": "Upload a government fee circular (PDF or image) to extract fee structure data. This is for reference only — data is not auto-filled into the fee calculator.",
+  "reference_note": "This extracted data is for reference only. Please manually enter the values into the Fee Calculator.",
+  "ocr_status_pending": "Pending",
+  "ocr_status_extracted": "Extracted",
+  "ocr_status_failed": "Failed",
+  "uploaded_on": "Uploaded On",
+  "uploaded_by": "Uploaded By",
+  "confidence": "Confidence",
+  "extracted_grades": "Extracted Fee by Grade",
+  "grade": "Grade",
+  "fee_breakdown": "Fee Breakdown"
+}

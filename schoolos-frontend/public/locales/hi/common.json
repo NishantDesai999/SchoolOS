@@ -1,0 +1,82 @@
+{
+  "nav": {
+    "dashboard": "डैशबोर्ड",
+    "students": "छात्र",
+    "teachers": "शिक्षक",
+    "fees": "शुल्क",
+    "payments": "भुगतान",
+    "slc": "एस.एल.सी.",
+    "govtocr": "सर्कुलर OCR",
+    "digest": "दैनिक रिपोर्ट",
+    "school": "विद्यालय सेटअप",
+    "users": "उपयोगकर्ता"
+  },
+  "buttons": {
+    "save": "सहेजें",
+    "cancel": "रद्द करें",
+    "edit": "संपादित करें",
+    "delete": "हटाएं",
+    "download": "डाउनलोड",
+    "upload": "अपलोड",
+    "search": "खोजें",
+    "add": "जोड़ें",
+    "submit": "जमा करें",
+    "confirm": "पुष्टि करें",
+    "back": "वापस",
+    "next": "आगे",
+    "close": "बंद करें",
+    "view": "देखें",
+    "generate": "बनाएं",
+    "send": "भेजें",
+    "print": "प्रिंट",
+    "clear": "साफ करें",
+    "save_signature": "हस्ताक्षर सहेजें"
+  },
+  "status": {
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "paid": "भुगतान",
+    "pending": "बकाया",
+    "partial": "आंशिक",
+    "overdue": "अतिदेय",
+    "waived": "माफ",
+    "enrolled": "प्रवेश",
+    "promoted": "पदोन्नत",
+    "detained": "रोका",
+    "alumni": "पूर्व छात्र",
+    "tc_issued": "टीसी जारी",
+    "issued": "जारी",
+    "cancelled": "रद्द",
+    "inquiry": "पूछताछ",
+    "submitted": "जमा",
+    "under_review": "समीक्षाधीन",
+    "approved": "अनुमोदित",
+    "rejected": "अस्वीकृत",
+    "success": "सफल",
+    "failed": "विफल",
+    "refunded": "वापसी"
+  },
+  "language": {
+    "en": "EN",
+    "hi": "हि",
+    "gu": "ગુ",
+    "select_pdf_lang": "PDF भाषा"
+  },
+  "table": {
+    "no_data": "कोई रिकॉर्ड नहीं मिला",
+    "loading": "लोड हो रहा है...",
+    "showing": "{{from}}-{{to}} में से {{total}} दिखाना"
+  },
+  "validation": {
+    "required": "यह फ़ील्ड आवश्यक है",
+    "invalid_email": "अमान्य ईमेल पता",
+    "invalid_phone": "अमान्य फ़ोन नंबर",
+    "min_length": "न्यूनतम {{min}} अक्षर आवश्यक",
+    "max_length": "अधिकतम {{max}} अक्षर अनुमत"
+  },
+  "logout": "लॉगआउट",
+  "profile": "प्रोफाइल",
+  "loading": "लोड हो रहा है...",
+  "error": "कुछ गलत हो गया",
+  "confirm_delete": "क्या आप इस रिकॉर्ड को हटाना चाहते हैं?"
+}

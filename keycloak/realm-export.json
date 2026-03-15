@@ -1,0 +1,107 @@
+{
+  "realm": "schoolos",
+  "enabled": true,
+  "displayName": "SchoolOS",
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 10,
+  "defaultSignatureAlgorithm": "RS256",
+  "accessTokenLifespan": 300,
+  "accessTokenLifespanForImplicitFlow": 900,
+  "ssoSessionIdleTimeout": 1800,
+  "ssoSessionMaxLifespan": 36000,
+  "roles": {
+    "realm": [
+      { "name": "ADMIN", "description": "School Administrator" },
+      { "name": "ACCOUNTANT", "description": "School Accountant" },
+      { "name": "PARENT", "description": "Student Guardian / Parent" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "schoolos-frontend",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": [
+        "http://localhost:5173/*",
+        "http://localhost:80/*"
+      ],
+      "webOrigins": [
+        "http://localhost:5173",
+        "http://localhost:80"
+      ],
+      "publicClient": true,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "http://localhost:5173/*##http://localhost:80/*"
+      },
+      "protocolMappers": [
+        {
+          "name": "school_id",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "userinfo.token.claim": "true",
+            "user.attribute": "school_id",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "claim.name": "school_id",
+            "jsonType.label": "String"
+          }
+        }
+      ]
+    },
+    {
+      "clientId": "schoolos-backend",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "schoolos-backend-secret",
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "standardFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "directAccessGrantsEnabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "admin@school.com",
+      "email": "admin@school.com",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "School",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "Admin@123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["ADMIN"],
+      "attributes": {
+        "school_id": ["00000000-0000-0000-0000-000000000001"]
+      }
+    }
+  ],
+  "internationalizationEnabled": true,
+  "supportedLocales": ["en", "hi", "gu"],
+  "defaultLocale": "en"
+}

@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: schoolos-backend
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/schoolos}
+    username: ${SPRING_DATASOURCE_USERNAME:schoolos}
+    password: ${SPRING_DATASOURCE_PASSWORD:schoolos_secret}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 2
+      connection-timeout: 20000
+
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://localhost:8180/realms/schoolos/protocol/openid-connect/certs}
+
+  mail:
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:1025}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_PASSWORD:}
+    properties:
+      mail.smtp.auth: false
+      mail.smtp.starttls.enable: false
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    deserialization:
+      fail-on-unknown-properties: false
+    default-property-inclusion: non_null
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: /
+
+app:
+  upload-dir: ${UPLOAD_DIR:/uploads}
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  keycloak:
+    server-url: ${KEYCLOAK_SERVER_URL:http://localhost:8180}
+    realm: schoolos
+    admin-client-id: ${KEYCLOAK_ADMIN_CLIENT_ID:schoolos-backend}
+    admin-client-secret: ${KEYCLOAK_ADMIN_CLIENT_SECRET:schoolos-backend-secret}
+
+anthropic:
+  api-key: ${ANTHROPIC_API_KEY:}
+  api-url: https://api.anthropic.com/v1/messages
+  model: claude-opus-4-6
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: alpha
+    tags-sorter: alpha

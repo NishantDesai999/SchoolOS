@@ -1,0 +1,82 @@
+{
+  "nav": {
+    "dashboard": "ડેશબોર્ડ",
+    "students": "વિદ્યાર્થીઓ",
+    "teachers": "શિક્ષકો",
+    "fees": "ફી",
+    "payments": "ચૂકવણી",
+    "slc": "એસ.એલ.સી.",
+    "govtocr": "સર્ક્યુલર OCR",
+    "digest": "દૈનિક અહેવાલ",
+    "school": "શાળા સેટઅપ",
+    "users": "વપરાશકર્તાઓ"
+  },
+  "buttons": {
+    "save": "સાચવો",
+    "cancel": "રદ કરો",
+    "edit": "સંપાદિત કરો",
+    "delete": "કાઢી નાખો",
+    "download": "ડાઉનલોડ",
+    "upload": "અપલોડ",
+    "search": "શોધો",
+    "add": "ઉમેરો",
+    "submit": "સબમિટ કરો",
+    "confirm": "પુષ્ટિ કરો",
+    "back": "પાછળ",
+    "next": "આગળ",
+    "close": "બંધ કરો",
+    "view": "જુઓ",
+    "generate": "બનાવો",
+    "send": "મોકલો",
+    "print": "પ્રિન્ટ",
+    "clear": "સાફ કરો",
+    "save_signature": "સહી સાચવો"
+  },
+  "status": {
+    "active": "સક્રિય",
+    "inactive": "નિષ્ક્રિય",
+    "paid": "ભરપાઈ",
+    "pending": "બાકી",
+    "partial": "આંશિક",
+    "overdue": "મોડું",
+    "waived": "માફ",
+    "enrolled": "પ્રવેશ",
+    "promoted": "પ્રોત્સાહન",
+    "detained": "રોકાયેલ",
+    "alumni": "ભૂતપૂર્વ વિદ્યાર્થી",
+    "tc_issued": "ટીસી આપેલ",
+    "issued": "આપેલ",
+    "cancelled": "રદ",
+    "inquiry": "પૂછપરછ",
+    "submitted": "સબમિટ",
+    "under_review": "સમીક્ષા હેઠળ",
+    "approved": "મંજૂર",
+    "rejected": "નકારેલ",
+    "success": "સફળ",
+    "failed": "નિષ્ફળ",
+    "refunded": "પરત"
+  },
+  "language": {
+    "en": "EN",
+    "hi": "हि",
+    "gu": "ગુ",
+    "select_pdf_lang": "PDF ભાષા"
+  },
+  "table": {
+    "no_data": "કોઈ રેકોર્ડ મળ્યો નથી",
+    "loading": "લોડ થઈ રહ્યું છે...",
+    "showing": "{{from}}-{{to}} of {{total}} બતાવી રહ્યા છે"
+  },
+  "validation": {
+    "required": "આ ક્ષેત્ર જરૂરી છે",
+    "invalid_email": "અમાન્ય ઇમેઇલ સરનામું",
+    "invalid_phone": "અમાન્ય ફોન નંબર",
+    "min_length": "ઓછામાં ઓછા {{min}} અક્ષર જરૂરી",
+    "max_length": "વધુમાં વધુ {{max}} અક્ષર માન્ય"
+  },
+  "logout": "લૉગ આઉટ",
+  "profile": "પ્રોફાઇલ",
+  "loading": "લોડ થઈ રહ્યું છે...",
+  "error": "કંઈક ખોટું ગયું",
+  "confirm_delete": "શું તમે આ રેકોર્ડ કાઢી નાખવા માગો છો?"
+}

@@ -1,0 +1,129 @@
+version: "3.9"
+
+services:
+  # ── App Database ──────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: schoolos-postgres
+    environment:
+      POSTGRES_DB: schoolos
+      POSTGRES_USER: schoolos
+      POSTGRES_PASSWORD: schoolos_secret
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U schoolos -d schoolos"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - schoolos-net
+
+  # ── Keycloak Database ─────────────────────────────────────────────────────────
+  keycloak-db:
+    image: postgres:16-alpine
+    container_name: schoolos-keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak_secret
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - schoolos-net
+
+  # ── Keycloak ──────────────────────────────────────────────────────────────────
+  keycloak:
+    image: quay.io/keycloak/keycloak:24.0.4
+    container_name: schoolos-keycloak
+    command: start-dev --import-realm
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak_secret
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HTTP_PORT: 8180
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    ports:
+      - "8180:8180"
+    depends_on:
+      keycloak-db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:8180/health/ready || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+    networks:
+      - schoolos-net
+
+  # ── Spring Boot Backend ───────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./schoolos-backend
+      dockerfile: Dockerfile
+    container_name: schoolos-backend
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/schoolos
+      SPRING_DATASOURCE_USERNAME: schoolos
+      SPRING_DATASOURCE_PASSWORD: schoolos_secret
+      KEYCLOAK_JWK_URI: http://keycloak:8180/realms/schoolos/protocol/openid-connect/certs
+      KEYCLOAK_SERVER_URL: http://keycloak:8180
+      KEYCLOAK_ADMIN_CLIENT_ID: schoolos-backend
+      KEYCLOAK_ADMIN_CLIENT_SECRET: schoolos-backend-secret
+      FRONTEND_URL: http://localhost:5173
+      UPLOAD_DIR: /uploads
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      MAIL_HOST: ${MAIL_HOST:-localhost}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+    volumes:
+      - uploads_data:/uploads
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+    networks:
+      - schoolos-net
+
+  # ── React Frontend (Nginx) ────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./schoolos-frontend
+      dockerfile: Dockerfile
+    container_name: schoolos-frontend
+    environment:
+      VITE_KEYCLOAK_URL: http://localhost:8180
+      VITE_API_BASE_URL: http://localhost:8080
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - schoolos-net
+
+volumes:
+  postgres_data:
+  keycloak_db_data:
+  uploads_data:
+
+networks:
+  schoolos-net:
+    driver: bridge

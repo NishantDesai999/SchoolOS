@@ -1,0 +1,17 @@
+{
+  "title": "Dashboard",
+  "welcome": "Welcome back, {{name}}",
+  "total_students": "Total Students",
+  "total_teachers": "Total Teachers",
+  "fees_collected_today": "Fees Collected Today",
+  "pending_dues": "Pending Dues",
+  "new_admissions": "New Inquiries",
+  "slc_issued": "SLC Issued",
+  "recent_payments": "Recent Payments",
+  "upcoming_dues": "Upcoming Dues",
+  "quick_actions": "Quick Actions",
+  "collect_fee": "Collect Fee",
+  "issue_slc": "Issue SLC",
+  "new_student": "New Student",
+  "new_inquiry": "New Inquiry"
+}
