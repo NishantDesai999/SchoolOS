@@ -11,14 +11,16 @@ export const schoolApi = {
   // Calendar Years
   listCalendarYears: () => axiosClient.get('/calendar-years'),
   createCalendarYear: (data) => axiosClient.post('/calendar-years', data),
+  setCurrentYear: (id) => axiosClient.put(`/calendar-years/${id}/set-current`),
 
   // Classes
-  listClasses: (yearId) => axiosClient.get(`/classes?year_id=${yearId}`),
+  listClasses: (yearId) => axiosClient.get('/classes', { params: { year_id: yearId } }),
   createClass: (data) => axiosClient.post('/classes', data),
+  deleteClass: (id) => axiosClient.delete(`/classes/${id}`),
   cloneClassesFromYear: (data) => axiosClient.post('/classes/clone-from-year', data),
 
   // Sections
-  listSections: (classId) => axiosClient.get(`/sections?class_id=${classId}`),
+  listSections: (classId) => axiosClient.get('/sections', { params: { class_id: classId } }),
   createSection: (data) => axiosClient.post('/sections', data),
   updateSection: (id, data) => axiosClient.put(`/sections/${id}`, data),
   deleteSection: (id) => axiosClient.delete(`/sections/${id}`),

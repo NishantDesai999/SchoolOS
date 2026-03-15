@@ -1,11 +1,19 @@
+# syntax=docker/dockerfile:1
 FROM maven:3.9.8-eclipse-temurin-21-alpine AS build
 WORKDIR /app
-# Cache dependencies
+
+# Install Docker CLI so Testcontainers can spin up PostgreSQL for JOOQ codegen
+RUN apk add --no-cache docker-cli
+
+# Cache dependencies first
 COPY pom.xml .
 RUN mvn dependency:go-offline -q
-# Copy source and build (skip JOOQ codegen in Docker — use pre-generated or skip tests)
+
 COPY src ./src
-RUN mvn clean package -DskipTests -Djooq.codegen.skip=true
+
+# Mount Docker socket so Testcontainers can start a PostgreSQL container for JOOQ codegen
+RUN --mount=type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+    mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app

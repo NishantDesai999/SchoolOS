@@ -22,11 +22,14 @@ export const feesApi = {
 
   // Invoices
   generateInvoices: (data) => axiosClient.post('/invoices/generate', data),
+  listInvoices: (params) => axiosClient.get('/invoices', { params }),
   getInvoice: (id) => axiosClient.get(`/invoices/${id}`),
+  getStudentInvoices: (studentId) => axiosClient.get(`/invoices/student/${studentId}`),
+  getInvoicePdfUrl: (id) => `/api/v1/invoices/${id}/pdf`,
 
   // Reports
   getCollectionReport: (params) =>
     axiosClient.get('/fee-reports/collection', { params }),
   getDefaulterList: (params) =>
-    axiosClient.get('/fee-reports/defaulters', { params }),
+    axiosClient.get('/invoices/defaulters', { params }),
 }

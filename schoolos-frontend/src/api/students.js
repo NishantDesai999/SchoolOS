@@ -15,6 +15,7 @@ export const studentsApi = {
 export const admissionsApi = {
   inquire: (data) => axiosClient.post('/admissions/inquire', data),
   list: (params) => axiosClient.get('/admissions', { params }),
+  getById: (id) => axiosClient.get(`/admissions/${id}`),
   updateStatus: (id, data) => axiosClient.put(`/admissions/${id}/status`, data),
   convert: (id, data) => axiosClient.post(`/admissions/${id}/convert`, data),
 }
