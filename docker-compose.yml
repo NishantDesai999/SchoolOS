@@ -91,6 +91,10 @@ services:
       KEYCLOAK_ADMIN_CLIENT_SECRET: schoolos-backend-secret
       FRONTEND_URL: http://localhost:5173
       UPLOAD_DIR: /uploads
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
+      OLLAMA_VISION_MODEL: ${OLLAMA_VISION_MODEL:-qwen2-vl}
+      OLLAMA_ENABLED: ${OLLAMA_ENABLED:-true}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
       MAIL_HOST: ${MAIL_HOST:-localhost}
       MAIL_PORT: ${MAIL_PORT:-1025}
