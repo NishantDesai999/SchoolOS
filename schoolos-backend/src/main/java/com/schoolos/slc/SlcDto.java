@@ -27,5 +27,6 @@ public record SlcDto(
         String pdfUrlHi,
         String pdfUrlGu,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

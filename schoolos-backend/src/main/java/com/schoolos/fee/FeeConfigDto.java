@@ -12,5 +12,6 @@ public record FeeConfigDto(
         Boolean isActive,
         List<FeeBreakdownItemDto> items,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

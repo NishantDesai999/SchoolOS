@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/invoices")
-@PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+@PreAuthorize("hasAnyRole('admin', 'principal')")
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
@@ -33,7 +33,7 @@ public class InvoiceController {
     }
 
     @PostMapping("/generate")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
     public ApiResponse<List<InvoiceDto>> generate(@Valid @RequestBody GenerateInvoicesRequest req) {
         return ApiResponse.ok(invoiceService.generateBulk(req));
     }
@@ -48,6 +48,12 @@ public class InvoiceController {
             @PathVariable UUID studentId,
             @RequestParam(required = false) UUID yearId) {
         return ApiResponse.ok(invoiceService.getStudentLedger(studentId, yearId));
+    }
+
+    @PostMapping("/student-collect")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
+    public ApiResponse<InvoiceWithPaymentDto> collectForStudent(@RequestBody CollectFeeRequest req) {
+        return ApiResponse.ok(invoiceService.collectForStudent(req));
     }
 
     @GetMapping("/defaulters")

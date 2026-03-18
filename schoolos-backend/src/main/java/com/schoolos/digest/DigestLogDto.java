@@ -19,5 +19,7 @@ public record DigestLogDto(
         BigDecimal salaryPaidToday,
         String status,
         OffsetDateTime sentAt,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

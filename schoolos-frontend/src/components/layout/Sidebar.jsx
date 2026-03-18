@@ -2,23 +2,22 @@ import { NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useKeycloak } from '@react-keycloak/web'
 import {
-  LayoutDashboard, Users, GraduationCap, BookOpen,
-  CreditCard, Wallet, FileText, ScanSearch,
-  CalendarDays, Settings, UserCog
+  LayoutDashboard, GraduationCap, BookOpen,
+  CreditCard, Wallet, FileText,
+  CalendarDays, Settings, UserCog, Calculator
 } from 'lucide-react'
 import clsx from 'clsx'
 
 const navItems = [
-  { key: 'dashboard',  icon: LayoutDashboard, path: '/',          roles: ['ADMIN', 'ACCOUNTANT', 'PARENT'] },
-  { key: 'students',   icon: GraduationCap,  path: '/students',   roles: ['ADMIN', 'ACCOUNTANT'] },
-  { key: 'teachers',   icon: Users,           path: '/teachers',   roles: ['ADMIN'] },
-  { key: 'fees',       icon: CreditCard,      path: '/fees',       roles: ['ADMIN', 'ACCOUNTANT'] },
-  { key: 'payments',   icon: Wallet,          path: '/payments',   roles: ['ADMIN', 'ACCOUNTANT'] },
-  { key: 'slc',        icon: FileText,        path: '/slc',        roles: ['ADMIN'] },
-  { key: 'govtocr',    icon: ScanSearch,      path: '/govtocr',    roles: ['ADMIN'] },
-  { key: 'digest',     icon: CalendarDays,    path: '/digest',     roles: ['ADMIN'] },
-  { key: 'school',     icon: Settings,        path: '/school',     roles: ['ADMIN'] },
-  { key: 'users',      icon: UserCog,         path: '/users',      roles: ['ADMIN'] },
+  { key: 'dashboard',  icon: LayoutDashboard, path: '/',               roles: ['admin', 'principal', 'trustee'] },
+  { key: 'students',   icon: GraduationCap,   path: '/students',        roles: ['admin', 'principal'] },
+  { key: 'fees',       icon: CreditCard,      path: '/fees',            roles: ['admin', 'principal'] },
+  { key: 'feeCalc',   icon: Calculator,      path: '/fees/calculator', roles: ['admin', 'principal'] },
+  { key: 'payments',   icon: Wallet,          path: '/payments',        roles: ['admin', 'principal'] },
+  { key: 'slc',        icon: FileText,        path: '/slc',             roles: ['admin', 'principal'] },
+  { key: 'digest',     icon: CalendarDays,    path: '/digest',          roles: ['admin', 'principal'] },
+  { key: 'school',     icon: Settings,        path: '/school',          roles: ['admin'] },
+  { key: 'users',      icon: UserCog,         path: '/users',           roles: ['admin'] },
 ]
 
 export default function Sidebar({ collapsed }) {

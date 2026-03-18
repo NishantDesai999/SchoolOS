@@ -59,41 +59,6 @@ public class AdmissionService {
         return new AdmissionPage(data, total);
     }
 
-    public AdmissionDto createInquiry(UUID schoolId, CreateAdmissionRequest req) {
-        // schoolId passed explicitly since this is a public endpoint
-        UUID id = UUID.randomUUID();
-
-        // Find default calendar year
-        UUID yearId = req.calendarYearId();
-        if (yearId == null) {
-            yearId = dsl.select(CALENDAR_YEARS.ID)
-                    .from(CALENDAR_YEARS)
-                    .where(CALENDAR_YEARS.SCHOOL_ID.eq(schoolId))
-                    .and(CALENDAR_YEARS.IS_CURRENT.isTrue())
-                    .and(CALENDAR_YEARS.DELETED_AT.isNull())
-                    .fetchOneInto(UUID.class);
-        }
-
-        dsl.insertInto(ADMISSION_APPLICATIONS)
-                .set(ADMISSION_APPLICATIONS.ID, id)
-                .set(ADMISSION_APPLICATIONS.SCHOOL_ID, schoolId)
-                .set(ADMISSION_APPLICATIONS.CALENDAR_YEAR_ID, yearId)
-                .set(ADMISSION_APPLICATIONS.TARGET_GRADE_LEVEL, req.targetGradeLevel() != null ? req.targetGradeLevel() : 0)
-                .set(ADMISSION_APPLICATIONS.STUDENT_NAME, req.studentName())
-                .set(ADMISSION_APPLICATIONS.DOB, req.dob())
-                .set(ADMISSION_APPLICATIONS.GUARDIAN_NAME, req.guardianName())
-                .set(ADMISSION_APPLICATIONS.GUARDIAN_PHONE, req.guardianPhone())
-                .set(ADMISSION_APPLICATIONS.GUARDIAN_EMAIL, req.guardianEmail())
-                .set(ADMISSION_APPLICATIONS.PREFERRED_LANGUAGE, req.preferredLanguage() != null ? req.preferredLanguage() : "gu")
-                .set(ADMISSION_APPLICATIONS.STATUS, "INQUIRY")
-                .set(ADMISSION_APPLICATIONS.SOURCE, req.source())
-                .set(ADMISSION_APPLICATIONS.NOTES, req.notes())
-                .set(ADMISSION_APPLICATIONS.FOLLOW_UP_DATE, req.followUpDate())
-                .execute();
-
-        return getById(id);
-    }
-
     public AdmissionDto getById(UUID id) {
         UUID schoolId = TenantContext.get();
         AdmissionDto app = dsl.selectFrom(ADMISSION_APPLICATIONS)

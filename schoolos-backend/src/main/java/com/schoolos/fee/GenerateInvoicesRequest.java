@@ -6,9 +6,9 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 public record GenerateInvoicesRequest(
-        @NotNull UUID feeConfigId,
+        @NotNull UUID calendarYearId,
         @NotNull String periodLabel,
-        @NotNull LocalDate dueDate,
-        UUID classId,
-        UUID sectionId
+        LocalDate dueDate,   // optional, defaults to 30 days from now
+        UUID classId,        // optional, limit to a specific class
+        UUID sectionId       // optional, limit to a specific section
 ) {}

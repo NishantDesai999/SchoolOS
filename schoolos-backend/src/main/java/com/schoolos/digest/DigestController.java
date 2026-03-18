@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/digest")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('admin', 'principal')")
 public class DigestController {
 
     private final DigestService digestService;

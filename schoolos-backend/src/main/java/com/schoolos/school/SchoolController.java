@@ -1,6 +1,7 @@
 package com.schoolos.school;
 
 import com.schoolos.common.ApiResponse;
+import java.util.List;
 import com.schoolos.common.UrlResult;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -17,26 +18,33 @@ public class SchoolController {
         this.schoolService = schoolService;
     }
 
+
+    @GetMapping
+    @PreAuthorize("hasRole('admin')")
+    public ApiResponse<List<SchoolDto>> listAll() {
+        return ApiResponse.ok(schoolService.listAll());
+    }
+
     @GetMapping("/me")
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT', 'PARENT')")
+    @PreAuthorize("hasAnyRole('admin', 'principal', 'trustee')")
     public ApiResponse<SchoolDto> getMySchool() {
         return ApiResponse.ok(schoolService.getMySchool());
     }
 
     @PutMapping("/me")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
     public ApiResponse<SchoolDto> updateSchool(@Valid @RequestBody UpdateSchoolRequest req) {
         return ApiResponse.ok(schoolService.updateSchool(req));
     }
 
     @PostMapping("/me/logo")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
     public ApiResponse<UrlResult> uploadLogo(@RequestParam("file") MultipartFile file) {
         return ApiResponse.ok(schoolService.uploadLogo(file));
     }
 
     @PostMapping("/me/signature")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
     public ApiResponse<UrlResult> uploadSignature(@RequestParam("file") MultipartFile file) {
         return ApiResponse.ok(schoolService.uploadSignature(file));
     }

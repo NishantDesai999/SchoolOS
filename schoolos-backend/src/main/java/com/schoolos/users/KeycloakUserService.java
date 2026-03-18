@@ -19,7 +19,7 @@ public class KeycloakUserService {
 
     private static final Logger log = LoggerFactory.getLogger(KeycloakUserService.class);
 
-    @Value("${app.keycloak.server-url:http://localhost:8080}")
+    @Value("${app.keycloak.server-url:http://localhost:8180}")
     private String keycloakServerUrl;
 
     @Value("${app.keycloak.realm:schoolos}")
@@ -83,8 +83,7 @@ public class KeycloakUserService {
                         "type", "password",
                         "value", temporaryPassword != null ? temporaryPassword : "SchoolOS@123",
                         "temporary", true
-                )),
-                "realmRoles", List.of(role)
+                ))
         );
 
         try {
@@ -92,10 +91,12 @@ public class KeycloakUserService {
             ResponseEntity<Void> response = restTemplate.postForEntity(usersUrl, request, Void.class);
 
             if (response.getStatusCode().is2xxSuccessful()) {
-                // Get the created user's ID from Location header
                 String location = response.getHeaders().getFirst("Location");
                 if (location != null) {
-                    return location.substring(location.lastIndexOf('/') + 1);
+                    String userId = location.substring(location.lastIndexOf('/') + 1);
+                    // Assign realm role separately (Keycloak ignores realmRoles in user body)
+                    assignRealmRole(token, userId, role);
+                    return userId;
                 }
             }
         } catch (Exception e) {
@@ -103,6 +104,27 @@ public class KeycloakUserService {
         }
 
         return UUID.randomUUID().toString();
+    }
+
+    private void assignRealmRole(String token, String userId, String roleName) {
+        try {
+            String roleUrl = keycloakServerUrl + "/admin/realms/" + realm + "/roles/" + roleName;
+            HttpHeaders headers = new HttpHeaders();
+            headers.setBearerAuth(token);
+
+            ResponseEntity<Map> roleResp = restTemplate.exchange(roleUrl, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
+            if (roleResp.getBody() == null) {
+                log.warn("Role not found in Keycloak: {}", roleName);
+                return;
+            }
+
+            String roleMappingUrl = keycloakServerUrl + "/admin/realms/" + realm + "/users/" + userId + "/role-mappings/realm";
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            restTemplate.postForEntity(roleMappingUrl, new HttpEntity<>(List.of(roleResp.getBody()), headers), Void.class);
+            log.info("Assigned role '{}' to user {}", roleName, userId);
+        } catch (Exception e) {
+            log.error("Failed to assign role '{}' to user {}: {}", roleName, userId, e.getMessage());
+        }
     }
 
     public void disableUser(String keycloakUserId) {

@@ -5,13 +5,26 @@
 INSERT INTO schools (id, name, code, board, address, phone, email, default_language, digest_time)
 VALUES (
     '00000000-0000-0000-0000-000000000001',
-    'Demo School',
+    'Jay Somnath Vidhyalay',
     'DEMO',
     'CBSE',
     '123, School Road, Ahmedabad, Gujarat - 380001',
     '07912345678',
     'admin@demoschool.edu',
     'gu',
+    '20:00'
+) ON CONFLICT (code) DO NOTHING;
+-- Second school for multi-school demo
+INSERT INTO schools (id, name, code, board, address, phone, email, default_language, digest_time)
+VALUES (
+    '00000000-0000-0000-0000-000000000003',
+    'Vaijnath Vidhyalay',
+    'DEMO002',
+    'State Board',
+    '456 Education Avenue, Demo City',
+    '9876543211',
+    'highschool@demoschool.edu',
+    'en',
     '20:00'
 ) ON CONFLICT (code) DO NOTHING;
 

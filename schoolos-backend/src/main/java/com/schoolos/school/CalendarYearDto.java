@@ -13,5 +13,6 @@ public record CalendarYearDto(
         LocalDate endDate,
         Boolean isCurrent,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

@@ -1,23 +1,32 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
-import { Search } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { Search, Plus } from 'lucide-react'
 import { paymentsApi } from '../../api/payments'
 import Table from '../../components/common/Table'
+
+function toLocalDateStr(d) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+const todayD = new Date()
+const thirtyAgoD = new Date(); thirtyAgoD.setDate(thirtyAgoD.getDate() - 30)
+const today = toLocalDateStr(todayD)
+const defaultDateFrom = toLocalDateStr(thirtyAgoD)
 
 export default function PaymentHistory() {
   const { t: tc } = useTranslation('common')
   const [search, setSearch] = useState('')
-  const [dateFrom, setDateFrom] = useState('')
-  const [dateTo, setDateTo] = useState('')
+  const [dateFrom, setDateFrom] = useState(defaultDateFrom)
+  const [dateTo, setDateTo] = useState(today)
   const [page, setPage] = useState(0)
 
   const { data, isLoading } = useQuery({
     queryKey: ['payments', search, dateFrom, dateTo, page],
     queryFn: () => paymentsApi.list({
-      search,
-      date_from: dateFrom || undefined,
-      date_to: dateTo || undefined,
+      search: search || undefined,
+      dateFrom: dateFrom || undefined,
+      dateTo: dateTo || undefined,
       page,
       size: 20,
     }),
@@ -55,15 +64,20 @@ export default function PaymentHistory() {
       render: (v, row) => v || row.receipt_number || '—',
     },
     {
-      key: 'transactionRef',
+      key: 'upiTransactionId',
       header: 'Txn Ref',
-      render: (v, row) => v || row.transaction_ref || '—',
+      render: (v) => v || '—',
     },
   ]
 
   return (
     <div className="space-y-4">
-      <h1 className="text-2xl font-bold text-gray-900">Payment History</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Payment History</h1>
+        <Link to="/payments/new" className="btn-primary">
+          <Plus className="h-4 w-4" /> Record Payment
+        </Link>
+      </div>
 
       <div className="flex flex-wrap gap-3">
         <div className="relative w-64">
@@ -94,12 +108,12 @@ export default function PaymentHistory() {
             className="input-field w-40"
           />
         </div>
-        {(dateFrom || dateTo || search) && (
+        {(search !== '' || dateFrom !== defaultDateFrom || dateTo !== today) && (
           <button
-            onClick={() => { setSearch(''); setDateFrom(''); setDateTo(''); setPage(0) }}
+            onClick={() => { setSearch(''); setDateFrom(defaultDateFrom); setDateTo(today); setPage(0) }}
             className="btn-secondary text-sm"
           >
-            Clear Filters
+            Reset Filters
           </button>
         )}
       </div>

@@ -11,5 +11,7 @@ public record GuardianDto(
         String email,
         String occupation,
         Boolean isPrimary,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

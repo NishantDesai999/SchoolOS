@@ -21,5 +21,6 @@ public record AdmissionDto(
         LocalDate followUpDate,
         OffsetDateTime appliedAt,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

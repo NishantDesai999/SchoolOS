@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/classes")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('admin', 'principal')")
 public class ClassController {
 
     private final ClassService classService;
@@ -20,7 +20,7 @@ public class ClassController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
     public ApiResponse<List<ClassDto>> list(@RequestParam UUID yearId) {
         return ApiResponse.ok(classService.listByYear(yearId));
     }

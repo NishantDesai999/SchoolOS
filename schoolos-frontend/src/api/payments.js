@@ -3,6 +3,7 @@ import axiosClient from './axiosClient'
 export const paymentsApi = {
   list: (params) => axiosClient.get('/payments', { params }),
   record: (data) => axiosClient.post('/payments', data),
+  directCollect: (data) => axiosClient.post('/payments/direct', data),
   uploadUpiScreenshot: (formData) =>
     axiosClient.post('/payments/upi-screenshot', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },

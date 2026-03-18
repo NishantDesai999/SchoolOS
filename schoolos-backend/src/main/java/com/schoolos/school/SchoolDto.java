@@ -19,5 +19,6 @@ public record SchoolDto(
         String ownerEmail,
         LocalTime digestTime,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

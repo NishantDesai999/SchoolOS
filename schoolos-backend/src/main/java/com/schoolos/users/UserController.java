@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/users")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasRole('admin')")
 public class UserController {
 
     private final UserService userService;
@@ -41,6 +41,12 @@ public class UserController {
     public ApiResponse<UserDto> update(@PathVariable UUID id,
                                         @RequestBody UpdateUserRequest req) {
         return ApiResponse.ok(userService.update(id, req));
+    }
+
+    @PutMapping("/{id}/status")
+    public ApiResponse<UserDto> updateStatus(@PathVariable UUID id,
+                                              @RequestBody UpdateUserStatusRequest req) {
+        return ApiResponse.ok(userService.update(id, new UpdateUserRequest(null, null, null, null, "ACTIVE".equals(req.status()))));
     }
 
     @DeleteMapping("/{id}")

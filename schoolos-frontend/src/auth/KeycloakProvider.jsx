@@ -7,15 +7,22 @@ const initOptions = {
   checkLoginIframe: false,
 }
 
+function Loading() {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', fontFamily: 'sans-serif', color: '#6b7280' }}>
+      Loading…
+    </div>
+  )
+}
+
 export default function KeycloakProvider({ children }) {
   return (
     <ReactKeycloakProvider
       authClient={keycloak}
       initOptions={initOptions}
-      onTokens={({ token }) => {
-        if (token) {
-          // Token is automatically used by axiosClient interceptor
-        }
+      LoadingComponent={<Loading />}
+      onEvent={(event, error) => {
+        if (error) console.error('Keycloak event error:', event, error)
       }}
     >
       {children}

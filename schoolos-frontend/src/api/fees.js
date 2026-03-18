@@ -2,19 +2,17 @@ import axiosClient from './axiosClient'
 
 export const feesApi = {
   // Fee Config
-  getConfig: (year, grade) => axiosClient.get(`/fee-configs?year=${year}&grade=${grade}`),
-  listConfigYears: () => axiosClient.get('/fee-configs/years'),
-  createConfig: (data) => axiosClient.post('/fee-configs', data),
-  updateConfig: (id, data) => axiosClient.put(`/fee-configs/${id}`, data),
-  addItem: (id, data) => axiosClient.post(`/fee-configs/${id}/items`, data),
-  updateItem: (id, itemId, data) => axiosClient.put(`/fee-configs/${id}/items/${itemId}`, data),
-  deleteItem: (id, itemId) => axiosClient.delete(`/fee-configs/${id}/items/${itemId}`),
-  cloneConfig: (id, data) => axiosClient.post(`/fee-configs/${id}/clone`, data),
+  getConfig: (yearNumber, gradeLevel) =>
+    axiosClient.get(`/fee-configs?yearId=${yearNumber}&gradeLevel=${gradeLevel}`),
+  upsertConfig: (data) => axiosClient.put('/fee-configs', data),
 
   // Fee Calculator
-  calculate: (grNumber, year) =>
-    axiosClient.get(`/fee-calculator?gr_number=${grNumber}&year=${year}`),
-  calculateMultiYear: (data) => axiosClient.post('/fee-calculator/multi-year', data),
+  calculate: (grNumber, yearNumber) =>
+    yearNumber
+      ? axiosClient.get(`/fee-calculator?grNumber=${grNumber}&yearId=${yearNumber}`)
+      : axiosClient.get(`/fee-calculator?grNumber=${grNumber}`),
+  calculateByGrade: (calendarYear, gradeLevel, months) =>
+    axiosClient.get('/fee-calculator/by-grade', { params: { calendarYear, gradeLevel, months } }),
 
   // Discounts
   listDiscounts: () => axiosClient.get('/fee-discounts'),
@@ -26,6 +24,16 @@ export const feesApi = {
   getInvoice: (id) => axiosClient.get(`/invoices/${id}`),
   getStudentInvoices: (studentId) => axiosClient.get(`/invoices/student/${studentId}`),
   getInvoicePdfUrl: (id) => `/api/v1/invoices/${id}/pdf`,
+
+  // Per-student fee calculator
+  calculateForStudent: (studentId, fromMonth, toMonth) =>
+    axiosClient.get(`/fee-calculator/student/${studentId}`, { params: { fromMonth, toMonth } }),
+
+  // Collect fee for student (creates invoice + payment)
+  collectForStudent: (data) => axiosClient.post('/invoices/student-collect', data),
+
+  // Unified student ledger (invoices + direct payments)
+  getStudentLedger: (studentId) => axiosClient.get(`/students/${studentId}/ledger`),
 
   // Reports
   getCollectionReport: (params) =>

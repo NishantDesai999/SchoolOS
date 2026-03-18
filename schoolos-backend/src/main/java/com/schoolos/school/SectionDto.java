@@ -10,5 +10,6 @@ public record SectionDto(
         Integer capacity,
         UUID classTeacherId,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

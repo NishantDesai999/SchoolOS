@@ -64,22 +64,20 @@ services:
       keycloak-db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -sf http://localhost:8180/health/ready || exit 1"]
-      interval: 30s
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8180 && echo ok >&3"]
+      interval: 15s
       timeout: 10s
-      retries: 10
+      retries: 20
       start_period: 60s
     networks:
       - schoolos-net
 
   # ── Spring Boot Backend ───────────────────────────────────────────────────────
+  # Run `mvn clean package -DskipTests` in schoolos-backend/ before `docker compose up --build`
   backend:
     build:
       context: ./schoolos-backend
       dockerfile: Dockerfile
-      # BuildKit required for --mount=type=bind (JOOQ codegen via Testcontainers)
-      args:
-        BUILDKIT_INLINE_CACHE: 1
     container_name: schoolos-backend
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/schoolos

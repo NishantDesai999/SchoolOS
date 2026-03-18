@@ -20,5 +20,6 @@ public record StudentDto(
         String category,
         Boolean isRte,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

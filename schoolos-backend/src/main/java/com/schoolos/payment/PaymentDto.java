@@ -10,6 +10,8 @@ public record PaymentDto(
         String receiptNumber,
         UUID invoiceId,
         UUID studentId,
+        String studentName,
+        String grNumber,
         BigDecimal amount,
         String paymentMode,
         LocalDate paymentDate,
@@ -23,5 +25,7 @@ public record PaymentDto(
         String receiptUrl,
         String status,
         String notes,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

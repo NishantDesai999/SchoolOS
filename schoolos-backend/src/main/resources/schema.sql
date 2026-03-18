@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS users (
     school_id           UUID         NOT NULL REFERENCES schools(id),
     email               VARCHAR(100) UNIQUE,
     phone               VARCHAR(15),
-    role                VARCHAR(30)  NOT NULL,      -- ADMIN / ACCOUNTANT / PARENT
+    role                VARCHAR(30)  NOT NULL,      -- admin / principal / teacher / trustee
     name                VARCHAR(150) NOT NULL,
     preferred_language  VARCHAR(5),                 -- en / hi / gu (NULL = school default)
     is_active           BOOLEAN      NOT NULL DEFAULT true,
@@ -56,6 +56,32 @@ CREATE TABLE IF NOT EXISTS calendar_years (
     UNIQUE (school_id, year)
 );
 
+-- ── Teachers (defined before sections so the FK can be declared inline) ───────
+CREATE TABLE IF NOT EXISTS teachers (
+    id               UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
+    school_id        UUID          NOT NULL REFERENCES schools(id),
+    user_id          UUID          REFERENCES users(id),  -- nullable login
+    employee_id      VARCHAR(30)   UNIQUE NOT NULL,
+    first_name       VARCHAR(100)  NOT NULL,
+    last_name        VARCHAR(100)  NOT NULL,
+    phone            VARCHAR(15)   NOT NULL,
+    email            VARCHAR(100),
+    date_of_birth    DATE,
+    gender           VARCHAR(10)   NOT NULL,
+    qualification    VARCHAR(200),
+    specialization   VARCHAR(100),
+    date_of_joining  DATE          NOT NULL,
+    designation      VARCHAR(50),   -- PGT / TGT / PRT
+    photo_url        VARCHAR(500),
+    status           VARCHAR(20)   NOT NULL DEFAULT 'ACTIVE',  -- ACTIVE / RESIGNED / TERMINATED
+    bank_account     VARCHAR(20),   -- encrypted
+    bank_ifsc        VARCHAR(15),
+    monthly_salary   DECIMAL(10,2),
+    created_at       TIMESTAMPTZ   NOT NULL DEFAULT now(),
+    updated_at       TIMESTAMPTZ   NOT NULL DEFAULT now(),
+    deleted_at       TIMESTAMPTZ
+);
+
 -- ── Classes & Sections ────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS classes (
     id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -75,7 +101,7 @@ CREATE TABLE IF NOT EXISTS sections (
     class_id         UUID        NOT NULL REFERENCES classes(id),
     name             VARCHAR(10) NOT NULL,   -- e.g. A, B, C
     capacity         INTEGER     NOT NULL DEFAULT 40,
-    class_teacher_id UUID,                   -- FK to teachers added below
+    class_teacher_id UUID        REFERENCES teachers(id),
     created_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
     deleted_at       TIMESTAMPTZ,
@@ -161,45 +187,6 @@ CREATE TABLE IF NOT EXISTS admission_applications (
     updated_at         TIMESTAMPTZ  NOT NULL DEFAULT now(),
     deleted_at         TIMESTAMPTZ
 );
-
--- ── Teachers ──────────────────────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS teachers (
-    id               UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
-    school_id        UUID          NOT NULL REFERENCES schools(id),
-    user_id          UUID          REFERENCES users(id),  -- nullable login
-    employee_id      VARCHAR(30)   UNIQUE NOT NULL,
-    first_name       VARCHAR(100)  NOT NULL,
-    last_name        VARCHAR(100)  NOT NULL,
-    phone            VARCHAR(15)   NOT NULL,
-    email            VARCHAR(100),
-    date_of_birth    DATE,
-    gender           VARCHAR(10)   NOT NULL,
-    qualification    VARCHAR(200),
-    specialization   VARCHAR(100),
-    date_of_joining  DATE          NOT NULL,
-    designation      VARCHAR(50),   -- PGT / TGT / PRT
-    photo_url        VARCHAR(500),
-    status           VARCHAR(20)   NOT NULL DEFAULT 'ACTIVE',  -- ACTIVE / RESIGNED / TERMINATED
-    bank_account     VARCHAR(20),   -- encrypted
-    bank_ifsc        VARCHAR(15),
-    monthly_salary   DECIMAL(10,2),
-    created_at       TIMESTAMPTZ   NOT NULL DEFAULT now(),
-    updated_at       TIMESTAMPTZ   NOT NULL DEFAULT now(),
-    deleted_at       TIMESTAMPTZ
-);
-
--- Add FK now that teachers table exists
-DO $$
-BEGIN
-    IF NOT EXISTS (
-        SELECT 1 FROM information_schema.table_constraints
-        WHERE constraint_name = 'sections_class_teacher_id_fkey'
-    ) THEN
-        ALTER TABLE sections
-            ADD CONSTRAINT sections_class_teacher_id_fkey
-            FOREIGN KEY (class_teacher_id) REFERENCES teachers(id);
-    END IF;
-END $$;
 
 CREATE TABLE IF NOT EXISTS teacher_salary_payments (
     id               UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -337,7 +324,7 @@ CREATE TABLE IF NOT EXISTS fee_invoice_items (
 CREATE TABLE IF NOT EXISTS payments (
     id                 UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
     receipt_number     VARCHAR(30)   UNIQUE NOT NULL,
-    invoice_id         UUID          NOT NULL REFERENCES fee_invoices(id),
+    invoice_id         UUID          REFERENCES fee_invoices(id),
     student_id         UUID          NOT NULL REFERENCES students(id),
     amount             DECIMAL(10,2) NOT NULL,
     payment_mode       VARCHAR(20)   NOT NULL,  -- CASH / UPI
@@ -396,6 +383,10 @@ CREATE TABLE IF NOT EXISTS daily_digest_logs (
     updated_at          TIMESTAMPTZ   NOT NULL DEFAULT now(),
     deleted_at          TIMESTAMPTZ
 );
+
+-- ── Schema Migrations (idempotent) ───────────────────────────────────────────
+ALTER TABLE fee_invoices ADD COLUMN IF NOT EXISTS from_month VARCHAR(7);   -- e.g. "2025-06"
+ALTER TABLE fee_invoices ADD COLUMN IF NOT EXISTS to_month   VARCHAR(7);   -- e.g. "2025-11"
 
 -- ── Indexes ───────────────────────────────────────────────────────────────────
 CREATE INDEX IF NOT EXISTS idx_students_gr

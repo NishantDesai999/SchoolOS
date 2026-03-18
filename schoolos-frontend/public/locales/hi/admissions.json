@@ -1,0 +1,31 @@
+{
+  "title": "प्रवेश",
+  "enroll_student": "छात्र नामांकन करें",
+  "applicant_details": "आवेदक विवरण",
+  "applicant_name": "आवेदक का नाम",
+  "grade_applying": "आवेदित ग्रेड",
+  "date_of_birth": "जन्म तारीख",
+  "gender": "लिंग",
+  "parent_guardian_details": "माता-पिता / अभिभावक विवरण",
+  "parent_name": "माता-पिता का नाम",
+  "phone": "फोन",
+  "email": "ईमेल",
+  "address": "पता",
+  "notes": "टिप्पणी",
+  "submit_inquiry": "पूछताछ जमा करें",
+  "submitting": "जमा हो रहा है...",
+  "inquiry_success": "पूछताछ सफलतापूर्वक दर्ज की गई",
+  "convert_success": "छात्र में सफलतापूर्वक बदला गया",
+  "all_statuses": "सभी स्थिति",
+  "columns": {
+    "applicant_name": "आवेदक का नाम",
+    "grade": "ग्रेड",
+    "parent_name": "माता-पिता का नाम",
+    "phone": "फोन",
+    "status": "स्थिति",
+    "date": "तारीख",
+    "actions": "कार्रवाई",
+    "view": "देखें",
+    "convert": "बदलें"
+  }
+}

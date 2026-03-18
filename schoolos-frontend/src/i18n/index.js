@@ -11,13 +11,12 @@ i18n
     ns: [
       'common',
       'students',
-      'teachers',
       'fees',
       'payments',
       'slc',
-      'govtocr',
       'digest',
       'dashboard',
+      'admissions',
     ],
     defaultNS: 'common',
     backend: {

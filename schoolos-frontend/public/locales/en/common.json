@@ -9,7 +9,8 @@
     "govtocr": "Circular OCR",
     "digest": "Daily Digest",
     "school": "School Setup",
-    "users": "Users"
+    "users": "Users",
+    "feeCalc": "Fee Calculator"
   },
   "buttons": {
     "save": "Save",
@@ -75,10 +76,18 @@
     "max_length": "Maximum {{max}} characters allowed"
   },
   "months": {
-    "january": "January", "february": "February", "march": "March",
-    "april": "April", "may": "May", "june": "June",
-    "july": "July", "august": "August", "september": "September",
-    "october": "October", "november": "November", "december": "December"
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
   },
   "logout": "Logout",
   "profile": "Profile",

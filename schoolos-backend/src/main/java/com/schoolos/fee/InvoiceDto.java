@@ -20,7 +20,8 @@ public record InvoiceDto(
         String status,
         List<InvoiceItemDto> items,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {
     public record InvoiceItemDto(
             UUID id,

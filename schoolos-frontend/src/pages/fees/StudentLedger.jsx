@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery } from '@tanstack/react-query'
 import { useSearchParams } from 'react-router-dom'
@@ -9,6 +9,7 @@ import StatusBadge from '../../components/common/StatusBadge'
 import Table from '../../components/common/Table'
 
 export default function StudentLedger() {
+  const { t } = useTranslation('fees')
   const { t: tc } = useTranslation('common')
   const [searchParams] = useSearchParams()
   const [grInput, setGrInput] = useState('')
@@ -20,14 +21,15 @@ export default function StudentLedger() {
     queryFn: () => studentsApi.lookupByGr(searchGr),
     enabled: !!searchGr,
     retry: false,
-    onSuccess: (data) => {
-      if (data?.id) setStudentId(data.id)
-    },
   })
+
+  useEffect(() => {
+    if (student?.id) setStudentId(student.id)
+  }, [student])
 
   const { data: ledger, isLoading: ledgerLoading } = useQuery({
     queryKey: ['student-ledger', studentId],
-    queryFn: () => feesApi.getStudentInvoices(studentId),
+    queryFn: () => feesApi.getStudentLedger(studentId),
     enabled: !!studentId,
   })
 
@@ -36,27 +38,37 @@ export default function StudentLedger() {
     if (grInput.trim()) setSearchGr(grInput.trim())
   }
 
-  const invoices = Array.isArray(ledger) ? ledger : ledger?.data || []
-  const totalBilled = invoices.reduce((s, inv) => s + Number(inv.totalAmount || inv.total_amount || 0), 0)
-  const totalPaid = invoices.reduce((s, inv) => s + Number(inv.amountPaid || inv.amount_paid || 0), 0)
-  const totalBalance = invoices.reduce((s, inv) => s + Number(inv.balance || 0), 0)
+  const entries = Array.isArray(ledger) ? ledger : ledger?.data || []
+  const totalBilled  = entries.filter(e => e.type === 'INVOICE').reduce((s, e) => s + Number(e.amount || 0), 0)
+  const totalPaid    = entries.reduce((s, e) => s + Number(e.paid || 0), 0)
+  const totalBalance = entries.filter(e => e.type === 'INVOICE').reduce((s, e) => s + Number(e.balance || 0), 0)
 
   const columns = [
-    { key: 'period', header: 'Period', render: (v, row) => v || row.yearLabel || row.year_label || '—' },
     {
-      key: 'totalAmount',
-      header: 'Total Billed',
-      render: (v, row) => `₹${Number(v || row.total_amount || 0).toLocaleString('en-IN')}`,
+      key: 'type',
+      header: 'Type',
+      render: (v) => (
+        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${v === 'INVOICE' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'}`}>
+          {v === 'INVOICE' ? 'Invoice' : 'Payment'}
+        </span>
+      ),
+    },
+    { key: 'reference', header: 'Reference', render: (v) => v || '—' },
+    { key: 'period',    header: 'Period', render: (v) => v || '—' },
+    {
+      key: 'amount',
+      header: t('total_amount'),
+      render: (v) => `₹${Number(v || 0).toLocaleString('en-IN')}`,
     },
     {
-      key: 'amountPaid',
+      key: 'paid',
       header: 'Paid',
-      render: (v, row) => `₹${Number(v || row.amount_paid || 0).toLocaleString('en-IN')}`,
+      render: (v) => `₹${Number(v || 0).toLocaleString('en-IN')}`,
     },
     {
       key: 'balance',
       header: 'Balance',
-      render: (v) => (
+      render: (v, row) => row.type === 'DIRECT_PAYMENT' ? '—' : (
         <span className={Number(v) > 0 ? 'text-red-700 font-medium' : 'text-green-700'}>
           ₹{Number(v || 0).toLocaleString('en-IN')}
         </span>
@@ -64,19 +76,19 @@ export default function StudentLedger() {
     },
     {
       key: 'status',
-      header: 'Status',
-      render: (v) => <StatusBadge status={v?.toLowerCase()} />,
+      header: tc('status.paid'),
+      render: (v) => v ? <StatusBadge status={v?.toLowerCase()} /> : '—',
     },
     {
-      key: 'dueDate',
-      header: 'Due Date',
-      render: (v, row) => (v || row.due_date)?.split('T')[0] || '—',
+      key: 'date',
+      header: t('due_date'),
+      render: (v) => v?.split?.('T')?.[0] || v || '—',
     },
   ]
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-gray-900">Student Ledger</h1>
+      <h1 className="text-2xl font-bold text-gray-900">{t('ledger')}</h1>
 
       <div className="card">
         <form onSubmit={handleSearch} className="flex gap-3">
@@ -115,8 +127,7 @@ export default function StudentLedger() {
 
       {studentId && (
         <>
-          {/* Summary Cards */}
-          {invoices.length > 0 && (
+          {entries.length > 0 && (
             <div className="grid gap-4 sm:grid-cols-3">
               <div className="stat-card">
                 <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-600">
@@ -150,7 +161,7 @@ export default function StudentLedger() {
 
           <Table
             columns={columns}
-            data={invoices}
+            data={entries}
             loading={ledgerLoading}
           />
         </>

@@ -12,8 +12,8 @@ import Modal from '../../components/common/Modal'
 const schema = z.object({
   year: z.coerce.number().min(2000).max(2100),
   label: z.string().min(1, 'Label is required'),
-  start_date: z.string().min(1, 'Start date is required'),
-  end_date: z.string().min(1, 'End date is required'),
+  startDate: z.string().min(1, 'Start date is required'),
+  endDate: z.string().min(1, 'End date is required'),
 })
 
 export default function CalendarYears() {
@@ -115,13 +115,13 @@ export default function CalendarYears() {
           </div>
           <div>
             <label className="label">Start Date</label>
-            <input type="date" {...register('start_date')} className="input-field" />
-            {errors.start_date && <p className="mt-1 text-xs text-red-600">{errors.start_date.message}</p>}
+            <input type="date" {...register('startDate')} className="input-field" />
+            {errors.startDate && <p className="mt-1 text-xs text-red-600">{errors.startDate.message}</p>}
           </div>
           <div>
             <label className="label">End Date</label>
-            <input type="date" {...register('end_date')} className="input-field" />
-            {errors.end_date && <p className="mt-1 text-xs text-red-600">{errors.end_date.message}</p>}
+            <input type="date" {...register('endDate')} className="input-field" />
+            {errors.endDate && <p className="mt-1 text-xs text-red-600">{errors.endDate.message}</p>}
           </div>
           <div className="flex justify-end gap-3">
             <button type="button" onClick={() => setShowModal(false)} className="btn-secondary">

@@ -15,5 +15,7 @@ public record FeeBreakdownItemDto(
         Boolean gstApplicable,
         BigDecimal gstRate,
         Integer displayOrder,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

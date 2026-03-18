@@ -51,7 +51,7 @@ export default function ClassSectionSetup() {
   const sectionForm = useForm({ resolver: zodResolver(sectionSchema) })
 
   const createClassMutation = useMutation({
-    mutationFn: (data) => schoolApi.createClass({ ...data, year_id: selectedYearId }),
+    mutationFn: (data) => schoolApi.createClass({ ...data, calendarYearId: selectedYearId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes', selectedYearId] })
       toast.success('Class added')
@@ -72,7 +72,7 @@ export default function ClassSectionSetup() {
   })
 
   const createSectionMutation = useMutation({
-    mutationFn: (data) => schoolApi.createSection({ ...data, class_id: selectedClassId }),
+    mutationFn: (data) => schoolApi.createSection({ ...data, classId: selectedClassId }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sections', selectedClassId] })
       toast.success('Section added')
@@ -91,7 +91,7 @@ export default function ClassSectionSetup() {
   })
 
   const cloneMutation = useMutation({
-    mutationFn: () => schoolApi.cloneClassesFromYear({ from_year_id: cloneFromYearId, to_year_id: selectedYearId }),
+    mutationFn: () => schoolApi.cloneClasses(cloneFromYearId, selectedYearId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['classes', selectedYearId] })
       toast.success('Classes cloned successfully')

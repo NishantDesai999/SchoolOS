@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.OffsetDateTime;
 import java.util.UUID;
 
+import java.util.List;
 import static com.schoolos.jooq.Tables.SCHOOLS;
 
 @Service
@@ -25,7 +26,12 @@ public class SchoolService {
 
     public SchoolDto getMySchool() {
         UUID schoolId = TenantContext.get();
-        return dsl.selectFrom(SCHOOLS)
+        return dsl.select(
+                        SCHOOLS.ID, SCHOOLS.NAME, SCHOOLS.CODE, SCHOOLS.BOARD, SCHOOLS.ADDRESS,
+                        SCHOOLS.PHONE, SCHOOLS.EMAIL, SCHOOLS.LOGO_URL, SCHOOLS.PRINCIPAL_SIGNATURE_URL,
+                        SCHOOLS.DEFAULT_LANGUAGE, SCHOOLS.OWNER_WHATSAPP, SCHOOLS.OWNER_EMAIL,
+                        SCHOOLS.DIGEST_TIME, SCHOOLS.CREATED_AT, SCHOOLS.UPDATED_AT, SCHOOLS.DELETED_AT)
+                .from(SCHOOLS)
                 .where(SCHOOLS.ID.eq(schoolId))
                 .and(SCHOOLS.DELETED_AT.isNull())
                 .fetchOneInto(SchoolDto.class);
@@ -46,8 +52,7 @@ public class SchoolService {
         if (req.ownerWhatsapp() != null) update = update.set(SCHOOLS.OWNER_WHATSAPP, req.ownerWhatsapp());
         if (req.ownerEmail() != null) update = update.set(SCHOOLS.OWNER_EMAIL, req.ownerEmail());
         if (req.digestTime() != null) {
-            update = update.set(SCHOOLS.DIGEST_TIME,
-                    org.jooq.impl.DSL.field("?::time", org.jooq.impl.DSL.val(req.digestTime())));
+            update = update.set(SCHOOLS.DIGEST_TIME, java.time.LocalTime.parse(req.digestTime()));
         }
 
         update.where(SCHOOLS.ID.eq(schoolId)).execute();
@@ -75,4 +80,17 @@ public class SchoolService {
                 .execute();
         return UrlResult.of(url);
     }
+
+    public List<SchoolDto> listAll() {
+        return dsl.select(
+                        SCHOOLS.ID, SCHOOLS.NAME, SCHOOLS.CODE, SCHOOLS.BOARD, SCHOOLS.ADDRESS,
+                        SCHOOLS.PHONE, SCHOOLS.EMAIL, SCHOOLS.LOGO_URL, SCHOOLS.PRINCIPAL_SIGNATURE_URL,
+                        SCHOOLS.DEFAULT_LANGUAGE, SCHOOLS.OWNER_WHATSAPP, SCHOOLS.OWNER_EMAIL,
+                        SCHOOLS.DIGEST_TIME, SCHOOLS.CREATED_AT, SCHOOLS.UPDATED_AT, SCHOOLS.DELETED_AT)
+                .from(SCHOOLS)
+                .where(SCHOOLS.DELETED_AT.isNull())
+                .orderBy(SCHOOLS.NAME)
+                .fetchInto(SchoolDto.class);
+    }
+
 }

@@ -1,6 +1,8 @@
 import { useTranslation } from 'react-i18next'
 import { useKeycloak } from '@react-keycloak/web'
-import { Menu, LogOut, User, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { PanelLeftClose, PanelLeftOpen, LogOut, Building2 } from 'lucide-react'
+import { useSchool } from '../../context/SchoolContext'
+import { useQueryClient } from '@tanstack/react-query'
 
 const LANGUAGES = [
   { code: 'en', label: 'EN' },
@@ -11,10 +13,19 @@ const LANGUAGES = [
 export default function Header({ sidebarCollapsed, onToggleSidebar }) {
   const { i18n, t } = useTranslation('common')
   const { keycloak } = useKeycloak()
+  const { schoolId, setSchoolId, schools, isAdmin } = useSchool()
+  const queryClient = useQueryClient()
 
   const changeLanguage = (lang) => {
     i18n.changeLanguage(lang)
     localStorage.setItem('schoolos-lang', lang)
+  }
+
+  const handleSchoolChange = (e) => {
+    const newId = e.target.value
+    setSchoolId(newId)
+    // Invalidate all queries so data refreshes for the new school
+    queryClient.invalidateQueries()
   }
 
   return (
@@ -32,8 +43,30 @@ export default function Header({ sidebarCollapsed, onToggleSidebar }) {
         )}
       </button>
 
-      {/* Right: language switcher + user menu */}
+      {/* Right: school selector + language + user */}
       <div className="flex items-center gap-4">
+        {/* School Selector — admin sees dropdown, others see label */}
+        {schools.length > 0 && (
+          <div className="flex items-center gap-2">
+            <Building2 className="h-4 w-4 text-gray-400 flex-shrink-0" />
+            {isAdmin && schools.length > 1 ? (
+              <select
+                value={schoolId || ''}
+                onChange={handleSchoolChange}
+                className="text-sm font-medium text-gray-700 border border-gray-200 rounded-md px-2 py-1 bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 max-w-[180px]"
+              >
+                {schools.map((s) => (
+                  <option key={s.id} value={s.id}>{s.name}</option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-sm font-medium text-gray-700 max-w-[180px] truncate">
+                {schools.find((s) => s.id === schoolId)?.name || schools[0]?.name || ''}
+              </span>
+            )}
+          </div>
+        )}
+
         {/* Language switcher */}
         <div className="flex rounded-md border border-gray-200 overflow-hidden">
           {LANGUAGES.map((lang) => (

@@ -1,8 +1,8 @@
 import axiosClient from './axiosClient'
 
 export const slcApi = {
-  list: (params) => axiosClient.get('/slc/list', { params }),
-  lookup: (grNumber) => axiosClient.get(`/slc/lookup?gr_number=${grNumber}`),
+  list: (params) => axiosClient.get('/slc', { params }),
+  lookup: (grNumber) => axiosClient.post('/slc/lookup', null, { params: { grNumber } }),
   getById: (id) => axiosClient.get(`/slc/${id}`),
   issue: (data) => axiosClient.post('/slc', data),
   cancel: (id) => axiosClient.put(`/slc/${id}/cancel`),

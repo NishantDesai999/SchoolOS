@@ -10,6 +10,7 @@ import { ArrowLeft, Search } from 'lucide-react'
 import { slcApi } from '../../api/slc'
 import { studentsApi } from '../../api/students'
 import SignatureCanvas from '../../components/common/SignatureCanvas'
+import { useSchool } from '../../context/SchoolContext'
 
 const schema = z.object({
   gr_number: z.string().min(1, 'GR number is required'),
@@ -24,6 +25,7 @@ const schema = z.object({
 export default function SlcIssue() {
   const { t: tc } = useTranslation('common')
   const navigate = useNavigate()
+  const { schoolId, setSchoolId, schools, isAdmin } = useSchool()
   const [searchParams] = useSearchParams()
   const [signature, setSignature] = useState(null)
   const [lookupGr, setLookupGr] = useState(searchParams.get('gr') || '')
@@ -46,7 +48,18 @@ export default function SlcIssue() {
   })
 
   const mutation = useMutation({
-    mutationFn: (data) => slcApi.issue({ ...data, signature }),
+    mutationFn: (data) => slcApi.issue({
+      studentId: student?.id,
+      dateOfLeaving: data.leaving_date,
+      reason: data.reason,
+      reasonDetail: data.reason,
+      lastGradeAttended: parseInt(data.last_class) || 1,
+      lastExamPassed: data.last_class || '',
+      characterConduct: data.conduct || 'Good',
+      generalRemarks: data.remark || '',
+      studentSignatureUrl: signature || '',
+      guardianSignatureUrl: '',
+    }),
     onSuccess: (slc) => {
       toast.success('SLC issued successfully')
       const slcId = slc?.id || slc?.data?.id
@@ -72,6 +85,22 @@ export default function SlcIssue() {
         </button>
         <h1 className="text-2xl font-bold text-gray-900">Issue SLC</h1>
       </div>
+
+      {/* School selector — only for admins with multiple schools */}
+      {isAdmin && schools.length > 1 && (
+        <div className="card">
+          <label className="label">School</label>
+          <select
+            value={schoolId || ''}
+            onChange={(e) => setSchoolId(e.target.value)}
+            className="input-field"
+          >
+            {schools.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Student Search */}
       <div className="card space-y-3">

@@ -9,6 +9,7 @@ import toast from 'react-hot-toast'
 import { ChevronRight, ChevronLeft, Check } from 'lucide-react'
 import { studentsApi } from '../../api/students'
 import { schoolApi } from '../../api/school'
+import { useSchool } from '../../context/SchoolContext'
 
 const personalSchema = z.object({
   first_name: z.string().min(1, 'First name is required'),
@@ -42,6 +43,7 @@ export default function StudentOnboarding() {
   const { t } = useTranslation('students')
   const { t: tc } = useTranslation('common')
   const navigate = useNavigate()
+  const { schoolId, setSchoolId, schools, isAdmin } = useSchool()
   const [step, setStep] = useState(0)
   const [formData, setFormData] = useState({})
 
@@ -94,8 +96,23 @@ export default function StudentOnboarding() {
 
   const handleEnrollmentSubmit = enrollmentForm.handleSubmit((data) => {
     const payload = {
-      ...formData,
-      enrollment: data,
+      firstName: formData.first_name,
+      lastName: formData.last_name,
+      dateOfBirth: formData.date_of_birth,
+      gender: formData.gender,
+      bloodGroup: formData.blood_group || null,
+      aadhaarNumber: formData.aadhar_number || null,
+      admissionDate: new Date().toISOString().split('T')[0],
+      calendarYearId: data.year_id,
+      sectionId: data.section_id,
+      rollNumber: data.roll_number ? parseInt(data.roll_number) : null,
+      guardians: [{
+        name: formData.guardian?.guardian_name,
+        relation: formData.guardian?.relationship,
+        phone: formData.guardian?.phone,
+        email: formData.guardian?.email || null,
+        isPrimary: true,
+      }],
     }
     createMutation.mutate(payload)
   })
@@ -103,6 +120,22 @@ export default function StudentOnboarding() {
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <h1 className="text-2xl font-bold text-gray-900">{t('onboarding_title')}</h1>
+
+      {/* School selector — only for admins with multiple schools */}
+      {isAdmin && schools.length > 1 && (
+        <div className="card">
+          <label className="label">School</label>
+          <select
+            value={schoolId || ''}
+            onChange={(e) => setSchoolId(e.target.value)}
+            className="input-field"
+          >
+            {schools.map((s) => (
+              <option key={s.id} value={s.id}>{s.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* Step indicator */}
       <div className="flex items-center">

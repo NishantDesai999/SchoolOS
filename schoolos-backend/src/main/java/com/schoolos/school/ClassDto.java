@@ -11,5 +11,6 @@ public record ClassDto(
         Integer gradeLevel,
         Integer displayOrder,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

@@ -23,6 +23,8 @@ axiosClient.interceptors.request.use(
     // Pass preferred language for error messages
     const lang = localStorage.getItem('schoolos-lang') || 'en'
     config.headers['Accept-Language'] = lang
+    const schoolId = localStorage.getItem('schoolos-school-id')
+    if (schoolId && !config.headers['X-School-Id']) config.headers['X-School-Id'] = schoolId
     return config
   },
   (error) => Promise.reject(error)

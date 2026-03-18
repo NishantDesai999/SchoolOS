@@ -21,6 +21,7 @@ const schema = z.object({
 })
 
 export default function InquiryForm() {
+  const { t } = useTranslation('admissions')
   const { t: tc } = useTranslation('common')
   const navigate = useNavigate()
 
@@ -29,9 +30,17 @@ export default function InquiryForm() {
   })
 
   const createMutation = useMutation({
-    mutationFn: (data) => admissionsApi.inquire(data),
+    mutationFn: (data) => admissionsApi.inquire({
+      studentName: data.applicant_name,
+      dob: data.date_of_birth || null,
+      targetGradeLevel: data.grade_applying ? parseInt(data.grade_applying) : null,
+      guardianName: data.parent_name,
+      guardianPhone: data.parent_phone,
+      guardianEmail: data.parent_email || null,
+      notes: data.notes || null,
+    }),
     onSuccess: () => {
-      toast.success('Inquiry recorded successfully')
+      toast.success(t('inquiry_success'))
       navigate('/admissions')
     },
     onError: (err) => toast.error(err.message),
@@ -43,19 +52,19 @@ export default function InquiryForm() {
         <button onClick={() => navigate('/admissions')} className="text-gray-500 hover:text-gray-700">
           <ArrowLeft className="h-5 w-5" />
         </button>
-        <h1 className="text-2xl font-bold text-gray-900">New Admission Inquiry</h1>
+        <h1 className="text-2xl font-bold text-gray-900">{t('new_admission_inquiry')}</h1>
       </div>
 
       <form onSubmit={handleSubmit((d) => createMutation.mutate(d))} className="card space-y-5">
-        <h2 className="font-semibold text-gray-900 border-b pb-2">Applicant Details</h2>
+        <h2 className="font-semibold text-gray-900 border-b pb-2">{t('applicant_details')}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="label">Applicant Name *</label>
+            <label className="label">{t('applicant_name')} *</label>
             <input {...register('applicant_name')} className="input-field" />
             {errors.applicant_name && <p className="mt-1 text-xs text-red-600">{errors.applicant_name.message}</p>}
           </div>
           <div>
-            <label className="label">Grade Applying For *</label>
+            <label className="label">{t('grade_applying')} *</label>
             <select {...register('grade_applying')} className="input-field">
               <option value="">-- Select Grade --</option>
               {Array.from({ length: 12 }, (_, i) => i + 1).map((g) => (
@@ -69,11 +78,11 @@ export default function InquiryForm() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="label">Date of Birth</label>
+            <label className="label">{t('date_of_birth')}</label>
             <input type="date" {...register('date_of_birth')} className="input-field" />
           </div>
           <div>
-            <label className="label">Gender</label>
+            <label className="label">{t('gender')}</label>
             <select {...register('gender')} className="input-field">
               <option value="">-- Select --</option>
               <option value="MALE">Male</option>
@@ -83,30 +92,30 @@ export default function InquiryForm() {
           </div>
         </div>
 
-        <h2 className="font-semibold text-gray-900 border-b pb-2 pt-2">Parent/Guardian Details</h2>
+        <h2 className="font-semibold text-gray-900 border-b pb-2 pt-2">{t('parent_guardian_details')}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="label">Parent Name *</label>
+            <label className="label">{t('parent_name')} *</label>
             <input {...register('parent_name')} className="input-field" />
             {errors.parent_name && <p className="mt-1 text-xs text-red-600">{errors.parent_name.message}</p>}
           </div>
           <div>
-            <label className="label">Phone *</label>
+            <label className="label">{t('phone')} *</label>
             <input {...register('parent_phone')} className="input-field" placeholder="10-digit phone" />
             {errors.parent_phone && <p className="mt-1 text-xs text-red-600">{errors.parent_phone.message}</p>}
           </div>
         </div>
         <div>
-          <label className="label">Email</label>
+          <label className="label">{t('email')}</label>
           <input type="email" {...register('parent_email')} className="input-field" />
           {errors.parent_email && <p className="mt-1 text-xs text-red-600">{errors.parent_email.message}</p>}
         </div>
         <div>
-          <label className="label">Address</label>
+          <label className="label">{t('address')}</label>
           <input {...register('address')} className="input-field" />
         </div>
         <div>
-          <label className="label">Notes</label>
+          <label className="label">{t('notes')}</label>
           <textarea {...register('notes')} className="input-field" rows={3} />
         </div>
 
@@ -115,7 +124,7 @@ export default function InquiryForm() {
             {tc('buttons.cancel')}
           </button>
           <button type="submit" disabled={createMutation.isPending} className="btn-primary">
-            {createMutation.isPending ? 'Submitting...' : 'Submit Inquiry'}
+            {createMutation.isPending ? t('submitting') : t('submit_inquiry')}
           </button>
         </div>
       </form>

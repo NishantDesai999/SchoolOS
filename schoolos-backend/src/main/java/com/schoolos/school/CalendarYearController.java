@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/calendar-years")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('admin', 'principal')")
 public class CalendarYearController {
 
     private final CalendarYearService calendarYearService;
@@ -20,7 +20,7 @@ public class CalendarYearController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
     public ApiResponse<List<CalendarYearDto>> list() {
         return ApiResponse.ok(calendarYearService.listYears());
     }

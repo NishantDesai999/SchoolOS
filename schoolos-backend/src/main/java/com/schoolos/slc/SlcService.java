@@ -179,6 +179,18 @@ public class SlcService {
         return new SlcLookupResult(student, slcs);
     }
 
+    @Transactional
+    public SlcDto cancel(UUID id) {
+        UUID schoolId = TenantContext.get();
+        dsl.update(SCHOOL_LEAVING_CERTIFICATES)
+                .set(SCHOOL_LEAVING_CERTIFICATES.STATUS, "CANCELLED")
+                .set(SCHOOL_LEAVING_CERTIFICATES.UPDATED_AT, OffsetDateTime.now())
+                .where(SCHOOL_LEAVING_CERTIFICATES.ID.eq(id))
+                .and(SCHOOL_LEAVING_CERTIFICATES.SCHOOL_ID.eq(schoolId))
+                .execute();
+        return getById(id);
+    }
+
     private String generateSlcNumber(UUID schoolId) {
         int year = java.time.LocalDate.now().getYear();
         Integer count = dsl.fetchCount(

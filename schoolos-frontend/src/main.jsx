@@ -17,12 +17,10 @@ const queryClient = new QueryClient({
 })
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <KeycloakProvider>
-      <QueryClientProvider client={queryClient}>
-        <App />
-        <Toaster position="top-right" />
-      </QueryClientProvider>
-    </KeycloakProvider>
-  </React.StrictMode>
+  <KeycloakProvider>
+    <QueryClientProvider client={queryClient}>
+      <App />
+      <Toaster position="top-right" />
+    </QueryClientProvider>
+  </KeycloakProvider>
 )

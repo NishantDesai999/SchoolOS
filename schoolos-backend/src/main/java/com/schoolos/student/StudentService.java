@@ -56,26 +56,19 @@ public class StudentService {
 
         // If filtering by section/class/year, join with enrollments
         if (sectionId != null || classId != null || yearId != null) {
+            if (yearId != null) conditions.add(STUDENT_ENROLLMENTS.CALENDAR_YEAR_ID.eq(yearId));
+            if (sectionId != null) conditions.add(STUDENT_ENROLLMENTS.SECTION_ID.eq(sectionId));
+            if (classId != null) conditions.add(STUDENT_ENROLLMENTS.SECTION_ID.in(
+                    dsl.select(SECTIONS.ID).from(SECTIONS)
+                            .where(SECTIONS.CLASS_ID.eq(classId))
+                            .and(SECTIONS.DELETED_AT.isNull())));
+            Condition joinCombined = conditions.stream().reduce(DSL.trueCondition(), Condition::and);
+
             var query = dsl.selectDistinct(STUDENTS.fields())
                     .from(STUDENTS)
                     .join(STUDENT_ENROLLMENTS).on(STUDENT_ENROLLMENTS.STUDENT_ID.eq(STUDENTS.ID)
-                            .and(STUDENT_ENROLLMENTS.DELETED_AT.isNull()));
-
-            if (yearId != null) {
-                query = query.where(STUDENT_ENROLLMENTS.CALENDAR_YEAR_ID.eq(yearId));
-            }
-            if (sectionId != null) {
-                query = query.where(STUDENT_ENROLLMENTS.SECTION_ID.eq(sectionId));
-            }
-            if (classId != null) {
-                query = query.where(STUDENT_ENROLLMENTS.SECTION_ID.in(
-                        dsl.select(SECTIONS.ID).from(SECTIONS)
-                                .where(SECTIONS.CLASS_ID.eq(classId))
-                                .and(SECTIONS.DELETED_AT.isNull())
-                ));
-            }
-
-            query = query.where(combined);
+                            .and(STUDENT_ENROLLMENTS.DELETED_AT.isNull()))
+                    .where(joinCombined);
 
             long total = dsl.fetchCount(query);
             List<StudentDto> data = query

@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -36,7 +37,7 @@ public class PaymentService {
 
     public record PaymentPage(List<PaymentDto> data, long total) {}
 
-    public PaymentPage list(String search, int page, int size) {
+    public PaymentPage list(String search, String dateFrom, String dateTo, int page, int size) {
         UUID schoolId = TenantContext.get();
 
         List<Condition> conditions = new ArrayList<>();
@@ -53,13 +54,37 @@ public class PaymentService {
             conditions.add(
                 DSL.lower(PAYMENTS.RECEIPT_NUMBER).like(pattern)
                     .or(DSL.lower(PAYMENTS.UPI_TRANSACTION_ID).like(pattern))
+                    .or(PAYMENTS.STUDENT_ID.in(
+                        dsl.select(STUDENTS.ID).from(STUDENTS)
+                            .where(STUDENTS.DELETED_AT.isNull())
+                            .and(DSL.lower(DSL.concat(STUDENTS.FIRST_NAME, DSL.val(" "), STUDENTS.LAST_NAME)).like(pattern)
+                                .or(DSL.lower(STUDENTS.GR_NUMBER).like(pattern)))
+                    ))
             );
+        }
+
+        if (dateFrom != null && !dateFrom.isBlank()) {
+            conditions.add(PAYMENTS.PAYMENT_DATE.greaterOrEqual(LocalDate.parse(dateFrom)));
+        }
+        if (dateTo != null && !dateTo.isBlank()) {
+            conditions.add(PAYMENTS.PAYMENT_DATE.lessOrEqual(LocalDate.parse(dateTo)));
         }
 
         Condition combined = conditions.stream().reduce(DSL.trueCondition(), Condition::and);
 
         long total = dsl.fetchCount(dsl.selectFrom(PAYMENTS).where(combined));
-        List<PaymentDto> data = dsl.selectFrom(PAYMENTS)
+        List<PaymentDto> data = dsl.select(
+                        PAYMENTS.ID, PAYMENTS.RECEIPT_NUMBER, PAYMENTS.INVOICE_ID, PAYMENTS.STUDENT_ID,
+                        PAYMENTS.AMOUNT, PAYMENTS.PAYMENT_MODE, PAYMENTS.PAYMENT_DATE,
+                        PAYMENTS.UPI_TRANSACTION_ID, PAYMENTS.UPI_SENDER_NAME, PAYMENTS.UPI_SENDER_VPA,
+                        PAYMENTS.SCREENSHOT_URL, PAYMENTS.OCR_STATUS, PAYMENTS.OCR_CONFIDENCE,
+                        PAYMENTS.COLLECTED_BY, PAYMENTS.RECEIPT_URL, PAYMENTS.STATUS, PAYMENTS.NOTES,
+                        PAYMENTS.CREATED_AT, PAYMENTS.UPDATED_AT, PAYMENTS.DELETED_AT,
+                        DSL.concat(STUDENTS.FIRST_NAME, DSL.val(" "), STUDENTS.LAST_NAME).as("student_name"),
+                        STUDENTS.GR_NUMBER
+                )
+                .from(PAYMENTS)
+                .leftJoin(STUDENTS).on(STUDENTS.ID.eq(PAYMENTS.STUDENT_ID))
                 .where(combined)
                 .orderBy(PAYMENTS.CREATED_AT.desc())
                 .limit(size).offset((long) page * size)
@@ -121,6 +146,28 @@ public class PaymentService {
                 .set(FEE_INVOICES.STATUS, newStatus)
                 .set(FEE_INVOICES.UPDATED_AT, java.time.OffsetDateTime.now())
                 .where(FEE_INVOICES.ID.eq(req.invoiceId()))
+                .execute();
+
+        return getById(paymentId);
+    }
+
+    @Transactional
+    public PaymentDto directCollect(DirectPaymentRequest req) {
+        UUID schoolId = TenantContext.get();
+        UUID paymentId = UUID.randomUUID();
+        String receiptNumber = generateReceiptNumber(schoolId);
+
+        dsl.insertInto(PAYMENTS)
+                .set(PAYMENTS.ID, paymentId)
+                .set(PAYMENTS.RECEIPT_NUMBER, receiptNumber)
+                .set(PAYMENTS.STUDENT_ID, req.studentId())
+                .set(PAYMENTS.AMOUNT, req.amount())
+                .set(PAYMENTS.PAYMENT_MODE, req.paymentMode())
+                .set(PAYMENTS.PAYMENT_DATE, req.paymentDate())
+                .set(PAYMENTS.UPI_TRANSACTION_ID, req.upiTransactionId())
+                .set(PAYMENTS.NOTES, req.notes())
+                .set(PAYMENTS.STATUS, "SUCCESS")
+                .set(PAYMENTS.OCR_RAW_DATA, org.jooq.JSONB.valueOf("{}"))
                 .execute();
 
         return getById(paymentId);

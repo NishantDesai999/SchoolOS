@@ -11,14 +11,21 @@ import Table from '../../components/common/Table'
 import StatusBadge from '../../components/common/StatusBadge'
 import Modal from '../../components/common/Modal'
 
+export const ROLES = [
+  { value: 'admin',     displayName: 'Admin' },
+  { value: 'principal', displayName: 'Principal' },
+  { value: 'teacher',   displayName: 'Teacher' },
+  { value: 'trustee',   displayName: 'Trustee' },
+]
+
+const ROLE_VALUES = ROLES.map((r) => r.value)
+
 const schema = z.object({
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email'),
-  role: z.enum(['ADMIN', 'ACCOUNTANT', 'PARENT']),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  role: z.enum(ROLE_VALUES),
+  temporaryPassword: z.string().min(8, 'Password must be at least 8 characters'),
 })
-
-const ROLES = ['ADMIN', 'ACCOUNTANT', 'PARENT']
 
 export default function UserList() {
   const { t: tc } = useTranslation('common')
@@ -32,7 +39,7 @@ export default function UserList() {
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
-    defaultValues: { role: 'ACCOUNTANT' },
+    defaultValues: { role: 'principal' },
   })
 
   const createMutation = useMutation({
@@ -72,16 +79,19 @@ export default function UserList() {
     {
       key: 'role',
       header: 'Role',
-      render: (v) => (
-        <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
-          {v}
-        </span>
-      ),
+      render: (v) => {
+        const role = ROLES.find((r) => r.value === v)
+        return (
+          <span className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10">
+            {role?.displayName || v}
+          </span>
+        )
+      },
     },
     {
-      key: 'status',
+      key: 'isActive',
       header: 'Status',
-      render: (v) => <StatusBadge status={v?.toLowerCase()} />,
+      render: (v) => <StatusBadge status={v ? 'active' : 'inactive'} />,
     },
     {
       key: 'id',
@@ -91,13 +101,13 @@ export default function UserList() {
           <button
             onClick={() => toggleStatusMutation.mutate({
               id,
-              status: row.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE',
+              status: row.isActive ? 'INACTIVE' : 'ACTIVE',
             })}
             disabled={toggleStatusMutation.isPending}
             className="text-gray-500 hover:text-gray-700"
-            title={row.status === 'ACTIVE' ? 'Deactivate' : 'Activate'}
+            title={row.isActive ? 'Deactivate' : 'Activate'}
           >
-            {row.status === 'ACTIVE'
+            {row.isActive
               ? <ToggleRight className="h-5 w-5 text-green-600" />
               : <ToggleLeft className="h-5 w-5 text-gray-400" />
             }
@@ -132,7 +142,6 @@ export default function UserList() {
         loading={isLoading}
       />
 
-      {/* Add User Modal */}
       <Modal isOpen={showModal} onClose={() => { setShowModal(false); reset() }} title="Add New User">
         <form onSubmit={handleSubmit((d) => createMutation.mutate(d))} className="space-y-4">
           <div>
@@ -149,14 +158,14 @@ export default function UserList() {
             <label className="label">Role *</label>
             <select {...register('role')} className="input-field">
               {ROLES.map((r) => (
-                <option key={r} value={r}>{r}</option>
+                <option key={r.value} value={r.value}>{r.displayName}</option>
               ))}
             </select>
           </div>
           <div>
-            <label className="label">Password *</label>
-            <input type="password" {...register('password')} className="input-field" />
-            {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password.message}</p>}
+            <label className="label">Temporary Password *</label>
+            <input type="password" {...register('temporaryPassword')} className="input-field" />
+            {errors.temporaryPassword && <p className="mt-1 text-xs text-red-600">{errors.temporaryPassword.message}</p>}
           </div>
           <div className="flex justify-end gap-3">
             <button type="button" onClick={() => { setShowModal(false); reset() }} className="btn-secondary">

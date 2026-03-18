@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { Search, FileText } from 'lucide-react'
+import { Search, FileText, Plus } from 'lucide-react'
+import toast from 'react-hot-toast'
+import Modal from '../../components/common/Modal'
 import { feesApi } from '../../api/fees'
 import { schoolApi } from '../../api/school'
 import Table from '../../components/common/Table'
@@ -12,10 +14,15 @@ const STATUSES = ['', 'PENDING', 'PARTIAL', 'PAID', 'OVERDUE', 'WAIVED']
 
 export default function InvoiceList() {
   const { t: tc } = useTranslation('common')
+  const queryClient = useQueryClient()
   const [search, setSearch] = useState('')
   const [status, setStatus] = useState('')
   const [yearId, setYearId] = useState('')
   const [page, setPage] = useState(0)
+  const [showGenerate, setShowGenerate] = useState(false)
+  const [genYearId, setGenYearId] = useState('')
+  const [genPeriod, setGenPeriod] = useState('')
+  const [genDueDate, setGenDueDate] = useState('')
 
   const { data: years } = useQuery({
     queryKey: ['calendar-years'],
@@ -27,10 +34,28 @@ export default function InvoiceList() {
     queryFn: () => feesApi.listInvoices({
       search,
       status: status || undefined,
-      year_id: yearId || undefined,
+      yearId: yearId || undefined,
       page,
       size: 20,
     }),
+  })
+
+  const generateMutation = useMutation({
+    mutationFn: () => feesApi.generateInvoices({
+      calendarYearId: genYearId,
+      periodLabel: genPeriod,
+      dueDate: genDueDate || null,
+    }),
+    onSuccess: (res) => {
+      queryClient.invalidateQueries({ queryKey: ['invoices'] })
+      const count = Array.isArray(res) ? res.length : (res?.data?.length ?? 0)
+      toast.success(`Generated ${count} invoices`)
+      setShowGenerate(false)
+      setGenYearId('')
+      setGenPeriod('')
+      setGenDueDate('')
+    },
+    onError: (err) => toast.error(err.message),
   })
 
   const yearList = Array.isArray(years) ? years : years?.data || []
@@ -95,7 +120,55 @@ export default function InvoiceList() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Invoices</h1>
+        <button onClick={() => setShowGenerate(true)} className="btn-primary">
+          <Plus className="h-4 w-4" /> Generate Invoices
+        </button>
       </div>
+
+      <Modal isOpen={showGenerate} onClose={() => setShowGenerate(false)} title="Generate Invoices">
+        <div className="space-y-4">
+          <div>
+            <label className="label">Academic Year</label>
+            <select value={genYearId} onChange={(e) => setGenYearId(e.target.value)} className="input-field">
+              <option value="">-- Select Year --</option>
+              {yearList.map((yr) => (
+                <option key={yr.id} value={yr.id}>{yr.label || yr.year}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="label">Period Label (e.g. "Q1 2025-26")</label>
+            <input
+              type="text"
+              value={genPeriod}
+              onChange={(e) => setGenPeriod(e.target.value)}
+              placeholder="Q1 2025-26"
+              className="input-field"
+            />
+          </div>
+          <div>
+            <label className="label">Due Date (optional, defaults to 30 days from now)</label>
+            <input
+              type="date"
+              value={genDueDate}
+              onChange={(e) => setGenDueDate(e.target.value)}
+              className="input-field"
+            />
+          </div>
+          <div className="flex justify-end gap-3">
+            <button type="button" onClick={() => setShowGenerate(false)} className="btn-secondary">
+              Cancel
+            </button>
+            <button
+              onClick={() => generateMutation.mutate()}
+              disabled={!genYearId || !genPeriod || generateMutation.isPending}
+              className="btn-primary"
+            >
+              {generateMutation.isPending ? 'Generating...' : 'Generate'}
+            </button>
+          </div>
+        </div>
+      </Modal>
 
       <div className="flex flex-wrap gap-3">
         <div className="relative w-64">

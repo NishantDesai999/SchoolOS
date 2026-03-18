@@ -12,7 +12,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/payments")
-@PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+@PreAuthorize("hasAnyRole('admin', 'principal')")
 public class PaymentController {
 
     private final PaymentService paymentService;
@@ -24,15 +24,22 @@ public class PaymentController {
     @GetMapping
     public ApiResponse<List<PaymentDto>> list(
             @RequestParam(required = false) String search,
+            @RequestParam(required = false) String dateFrom,
+            @RequestParam(required = false) String dateTo,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
-        var result = paymentService.list(search, page, size);
+        var result = paymentService.list(search, dateFrom, dateTo, page, size);
         return ApiResponse.paged(result.data(), result.total(), page, size);
     }
 
     @PostMapping
     public ApiResponse<PaymentDto> create(@Valid @RequestBody CreatePaymentRequest req) {
         return ApiResponse.ok(paymentService.create(req));
+    }
+
+    @PostMapping("/direct")
+    public ApiResponse<PaymentDto> directCollect(@Valid @RequestBody DirectPaymentRequest req) {
+        return ApiResponse.ok(paymentService.directCollect(req));
     }
 
     @GetMapping("/{id}")

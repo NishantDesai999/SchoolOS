@@ -12,5 +12,7 @@ public record EnrollmentDto(
         Integer rollNumber,
         LocalDate enrollmentDate,
         String status,
-        OffsetDateTime createdAt
+        OffsetDateTime createdAt,
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

@@ -11,7 +11,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/slc")
-@PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+@PreAuthorize("hasAnyRole('admin', 'principal')")
 public class SlcController {
 
     private final SlcService slcService;
@@ -31,7 +31,7 @@ public class SlcController {
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
     public ApiResponse<SlcDto> create(@Valid @RequestBody CreateSlcRequest req) {
         return ApiResponse.ok(slcService.create(req));
     }
@@ -42,7 +42,7 @@ public class SlcController {
     }
 
     @PutMapping("/{id}/sign")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
     public ApiResponse<SlcDto> sign(@PathVariable UUID id,
                                      @RequestParam String signatureUrl) {
         return ApiResponse.ok(slcService.saveSignature(id, signatureUrl));
@@ -58,5 +58,11 @@ public class SlcController {
     @PostMapping("/lookup")
     public ApiResponse<SlcService.SlcLookupResult> lookup(@RequestParam String grNumber) {
         return ApiResponse.ok(slcService.lookupByGrNumber(grNumber));
+    }
+
+    @PutMapping("/{id}/cancel")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
+    public ApiResponse<SlcDto> cancel(@PathVariable UUID id) {
+        return ApiResponse.ok(slcService.cancel(id));
     }
 }

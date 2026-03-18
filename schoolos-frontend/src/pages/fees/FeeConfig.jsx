@@ -1,29 +1,25 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
 import toast from 'react-hot-toast'
-import { Plus, Trash2, Edit } from 'lucide-react'
+import { Plus, Trash2, Save } from 'lucide-react'
 import { feesApi } from '../../api/fees'
 import { schoolApi } from '../../api/school'
 
-const itemSchema = z.object({
-  fee_type: z.string().min(1, 'Fee type is required'),
-  label: z.string().min(1, 'Label is required'),
-  amount: z.coerce.number().min(0, 'Amount must be positive'),
-})
+const FEE_TYPES = ['TUITION', 'EXAM', 'SPORTS', 'LIBRARY', 'TRANSPORT', 'MISCELLANEOUS', 'TERM_FEE']
 
-const FEE_TYPES = ['TUITION', 'EXAM', 'SPORTS', 'LIBRARY', 'TRANSPORT', 'MISCELLANEOUS']
+const GRADE_OPTIONS = [
+  { label: 'KG / Nursery', value: 0 },
+  ...Array.from({ length: 12 }, (_, i) => ({ label: `Grade ${i + 1}`, value: i + 1 })),
+]
 
 export default function FeeConfig() {
   const { t: tc } = useTranslation('common')
   const queryClient = useQueryClient()
-  const [selectedYear, setSelectedYear] = useState('')
-  const [selectedGrade, setSelectedGrade] = useState('')
-  const [showAddItem, setShowAddItem] = useState(false)
-  const [editItem, setEditItem] = useState(null)
+  const [selectedYear, setSelectedYear] = useState('')   // integer year number e.g. 2025
+  const [selectedGrade, setSelectedGrade] = useState('') // integer grade level e.g. 0–12
+  const [localItems, setLocalItems] = useState([])
+  const [dirty, setDirty] = useState(false)
 
   const { data: years } = useQuery({
     queryKey: ['calendar-years'],
@@ -33,51 +29,65 @@ export default function FeeConfig() {
   const { data: feeConfig, isLoading } = useQuery({
     queryKey: ['fee-config', selectedYear, selectedGrade],
     queryFn: () => feesApi.getConfig(selectedYear, selectedGrade),
-    enabled: !!selectedYear && !!selectedGrade,
+    enabled: !!selectedYear && selectedGrade !== '',
   })
 
-  const { register, handleSubmit, reset, formState: { errors } } = useForm({
-    resolver: zodResolver(itemSchema),
+  // Sync fetched items into local state
+  useEffect(() => {
+    const configs = Array.isArray(feeConfig) ? feeConfig : []
+    const items = configs.length > 0 ? (configs[0].items || []) : []
+    setLocalItems(items.map((it) => ({ ...it, _key: it.id || crypto.randomUUID() })))
+    setDirty(false)
+  }, [feeConfig])
+
+  const saveMutation = useMutation({
+    mutationFn: () =>
+      feesApi.upsertConfig({
+        calendarYear: Number(selectedYear),
+        gradeLevel: Number(selectedGrade),
+        isActive: true,
+        items: localItems.map((it, idx) => ({
+          type: it.type,
+          value: Number(it.value),
+          frequency: 'MONTHLY',
+          isMandatory: it.isMandatory !== false,
+          isRecurring: it.isRecurring !== false,
+          gstApplicable: it.gstApplicable || false,
+          gstRate: it.gstRate || 0,
+          displayOrder: idx,
+        })),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['fee-config'] })
+      toast.success('Fee configuration saved')
+      setDirty(false)
+    },
+    onError: (err) => toast.error(err.message),
   })
 
   const yearList = Array.isArray(years) ? years : years?.data || []
-  const config = feeConfig?.config || feeConfig || {}
-  const items = config.items || feeConfig?.items || []
-  const configId = config.id || feeConfig?.id
 
-  const createConfigMutation = useMutation({
-    mutationFn: (data) => configId
-      ? feesApi.addItem(configId, data)
-      : feesApi.createConfig({ year: selectedYear, grade: selectedGrade, items: [data] }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fee-config'] })
-      toast.success('Fee item added')
-      setShowAddItem(false)
-      reset()
-    },
-    onError: (err) => toast.error(err.message),
-  })
+  const addItem = () => {
+    setLocalItems((prev) => [
+      ...prev,
+      { _key: crypto.randomUUID(), type: 'TUITION', value: 0, frequency: 'MONTHLY', isMandatory: true },
+    ])
+    setDirty(true)
+  }
 
-  const updateItemMutation = useMutation({
-    mutationFn: ({ itemId, data }) => feesApi.updateItem(configId, itemId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fee-config'] })
-      toast.success('Fee item updated')
-      setEditItem(null)
-    },
-    onError: (err) => toast.error(err.message),
-  })
+  const removeItem = (key) => {
+    setLocalItems((prev) => prev.filter((it) => it._key !== key))
+    setDirty(true)
+  }
 
-  const deleteItemMutation = useMutation({
-    mutationFn: (itemId) => feesApi.deleteItem(configId, itemId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['fee-config'] })
-      toast.success('Fee item removed')
-    },
-    onError: (err) => toast.error(err.message),
-  })
+  const updateItem = (key, field, val) => {
+    setLocalItems((prev) =>
+      prev.map((it) => (it._key === key ? { ...it, [field]: val } : it))
+    )
+    setDirty(true)
+  }
 
-  const total = items.reduce((sum, item) => sum + Number(item.amount || 0), 0)
+  const total = localItems.reduce((sum, it) => sum + Number(it.value || 0), 0)
 
   return (
     <div className="space-y-6">
@@ -87,163 +97,112 @@ export default function FeeConfig() {
       <div className="card flex flex-wrap gap-4">
         <div>
           <label className="label">Academic Year</label>
-          <select value={selectedYear} onChange={(e) => setSelectedYear(e.target.value)} className="input-field">
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(e.target.value)}
+            className="input-field"
+          >
             <option value="">-- Select Year --</option>
             {yearList.map((yr) => (
-              <option key={yr.id} value={yr.id}>{yr.label || yr.year}</option>
+              <option key={yr.id} value={yr.year}>{yr.label || yr.year}</option>
             ))}
           </select>
         </div>
         <div>
           <label className="label">Grade Level</label>
-          <select value={selectedGrade} onChange={(e) => setSelectedGrade(e.target.value)} className="input-field">
+          <select
+            value={selectedGrade}
+            onChange={(e) => setSelectedGrade(e.target.value)}
+            className="input-field"
+          >
             <option value="">-- Select Grade --</option>
-            {['LKG', 'UKG', ...Array.from({ length: 12 }, (_, i) => i + 1)].map((g) => (
-              <option key={g} value={g}>Grade {g}</option>
+            {GRADE_OPTIONS.map((g) => (
+              <option key={g.value} value={g.value}>{g.label}</option>
             ))}
           </select>
         </div>
       </div>
 
-      {selectedYear && selectedGrade && (
+      {selectedYear && selectedGrade !== '' && (
         <div className="card space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-gray-900">Fee Breakdown</h2>
-            <button onClick={() => setShowAddItem(true)} className="btn-primary">
-              <Plus className="h-4 w-4" /> Add Item
-            </button>
+            <div className="flex gap-2">
+              <button onClick={addItem} className="btn-secondary text-sm">
+                <Plus className="h-4 w-4" /> Add Item
+              </button>
+              <button
+                onClick={() => saveMutation.mutate()}
+                disabled={!dirty || saveMutation.isPending}
+                className="btn-primary text-sm"
+              >
+                <Save className="h-4 w-4" />
+                {saveMutation.isPending ? 'Saving...' : 'Save Changes'}
+              </button>
+            </div>
           </div>
 
           {isLoading ? (
             <p className="text-sm text-gray-500">{tc('loading')}</p>
           ) : (
             <>
-              {items.length === 0 ? (
+              {localItems.length === 0 ? (
                 <p className="text-sm text-gray-500">No fee items configured. Add items above.</p>
               ) : (
                 <table className="min-w-full text-sm">
                   <thead>
                     <tr className="border-b border-gray-200">
                       <th className="py-2 text-left font-medium text-gray-500">Fee Type</th>
-                      <th className="py-2 text-left font-medium text-gray-500">Label</th>
-                      <th className="py-2 text-right font-medium text-gray-500">Amount (₹)</th>
-                      <th className="py-2 w-20" />
+                      <th className="py-2 text-right font-medium text-gray-500">Monthly Amount (₹)</th>
+                      <th className="py-2 w-10" />
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
-                    {items.map((item) => (
-                      <tr key={item.id}>
-                        {editItem === item.id ? (
-                          <EditItemRow
-                            item={item}
-                            onSave={(data) => updateItemMutation.mutate({ itemId: item.id, data })}
-                            onCancel={() => setEditItem(null)}
+                    {localItems.map((item) => (
+                      <tr key={item._key}>
+                        <td className="py-1">
+                          <select
+                            value={item.type}
+                            onChange={(e) => updateItem(item._key, 'type', e.target.value)}
+                            className="input-field text-sm"
+                          >
+                            {FEE_TYPES.map((ft) => (
+                              <option key={ft} value={ft}>{ft}</option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="py-1">
+                          <input
+                            type="number"
+                            value={item.value}
+                            onChange={(e) => updateItem(item._key, 'value', e.target.value)}
+                            className="input-field text-sm text-right"
                           />
-                        ) : (
-                          <>
-                            <td className="py-2 text-gray-700">{item.feeType || item.fee_type}</td>
-                            <td className="py-2 text-gray-900">{item.label}</td>
-                            <td className="py-2 text-right text-gray-900">
-                              ₹{Number(item.amount).toLocaleString('en-IN')}
-                            </td>
-                            <td className="py-2 text-right">
-                              <div className="flex justify-end gap-2">
-                                <button onClick={() => setEditItem(item.id)} className="text-gray-400 hover:text-gray-600">
-                                  <Edit className="h-4 w-4" />
-                                </button>
-                                <button
-                                  onClick={() => deleteItemMutation.mutate(item.id)}
-                                  className="text-red-400 hover:text-red-600"
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </button>
-                              </div>
-                            </td>
-                          </>
-                        )}
+                        </td>
+                        <td className="py-1 text-center">
+                          <button
+                            onClick={() => removeItem(item._key)}
+                            className="text-red-400 hover:text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
                       </tr>
                     ))}
                     <tr className="border-t border-gray-300 font-semibold">
-                      <td colSpan={2} className="py-2 text-gray-900">Total</td>
-                      <td className="py-2 text-right text-gray-900">₹{total.toLocaleString('en-IN')}</td>
+                      <td className="py-2 text-gray-900">Monthly Total</td>
+                      <td className="py-2 text-right text-gray-900">
+                        ₹{total.toLocaleString('en-IN')}
+                      </td>
                       <td />
                     </tr>
                   </tbody>
                 </table>
-              )}
-
-              {/* Add Item Form */}
-              {showAddItem && (
-                <form onSubmit={handleSubmit((d) => createConfigMutation.mutate(d))} className="space-y-3 border-t pt-3">
-                  <h3 className="font-medium text-gray-900 text-sm">Add Fee Item</h3>
-                  <div className="grid gap-3 sm:grid-cols-3">
-                    <div>
-                      <label className="label">Fee Type</label>
-                      <select {...register('fee_type')} className="input-field">
-                        <option value="">-- Select --</option>
-                        {FEE_TYPES.map((ft) => (
-                          <option key={ft} value={ft}>{ft}</option>
-                        ))}
-                      </select>
-                      {errors.fee_type && <p className="mt-1 text-xs text-red-600">{errors.fee_type.message}</p>}
-                    </div>
-                    <div>
-                      <label className="label">Label</label>
-                      <input {...register('label')} className="input-field" placeholder="e.g. Annual Tuition Fee" />
-                      {errors.label && <p className="mt-1 text-xs text-red-600">{errors.label.message}</p>}
-                    </div>
-                    <div>
-                      <label className="label">Amount (₹)</label>
-                      <input type="number" {...register('amount')} className="input-field" />
-                      {errors.amount && <p className="mt-1 text-xs text-red-600">{errors.amount.message}</p>}
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button type="submit" disabled={createConfigMutation.isPending} className="btn-primary text-sm">
-                      {createConfigMutation.isPending ? 'Adding...' : 'Add Item'}
-                    </button>
-                    <button type="button" onClick={() => { setShowAddItem(false); reset() }} className="btn-secondary text-sm">
-                      Cancel
-                    </button>
-                  </div>
-                </form>
               )}
             </>
           )}
         </div>
       )}
     </div>
-  )
-}
-
-function EditItemRow({ item, onSave, onCancel }) {
-  const [data, setData] = useState({
-    fee_type: item.feeType || item.fee_type,
-    label: item.label,
-    amount: item.amount,
-  })
-
-  return (
-    <>
-      <td className="py-1">
-        <select value={data.fee_type} onChange={(e) => setData({ ...data, fee_type: e.target.value })} className="input-field text-xs">
-          {['TUITION', 'EXAM', 'SPORTS', 'LIBRARY', 'TRANSPORT', 'MISCELLANEOUS'].map((ft) => (
-            <option key={ft} value={ft}>{ft}</option>
-          ))}
-        </select>
-      </td>
-      <td className="py-1">
-        <input value={data.label} onChange={(e) => setData({ ...data, label: e.target.value })} className="input-field text-xs" />
-      </td>
-      <td className="py-1">
-        <input type="number" value={data.amount} onChange={(e) => setData({ ...data, amount: e.target.value })} className="input-field text-xs text-right" />
-      </td>
-      <td className="py-1">
-        <div className="flex gap-1">
-          <button onClick={() => onSave(data)} className="text-xs text-green-600 hover:text-green-800 px-1">Save</button>
-          <button onClick={onCancel} className="text-xs text-gray-500 hover:text-gray-700 px-1">Cancel</button>
-        </div>
-      </td>
-    </>
   )
 }

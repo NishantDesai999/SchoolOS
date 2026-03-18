@@ -51,8 +51,7 @@ public class DigestService {
         if (req.ownerEmail() != null) update = update.set(SCHOOLS.OWNER_EMAIL, req.ownerEmail());
         if (req.ownerWhatsapp() != null) update = update.set(SCHOOLS.OWNER_WHATSAPP, req.ownerWhatsapp());
         if (req.digestTime() != null) {
-            update = update.set(SCHOOLS.DIGEST_TIME,
-                    org.jooq.impl.DSL.field("?::time", org.jooq.impl.DSL.val(req.digestTime())));
+            update = update.set(SCHOOLS.DIGEST_TIME, java.time.LocalTime.parse(req.digestTime()));
         }
         update.where(SCHOOLS.ID.eq(schoolId)).execute();
         return getSettings();

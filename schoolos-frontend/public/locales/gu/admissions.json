@@ -1,0 +1,31 @@
+{
+  "title": "પ્રવેશ",
+  "enroll_student": "વિદ્યાર્થી નોંધણી",
+  "applicant_details": "અરજદાર વિગત",
+  "applicant_name": "અરજદારનું નામ",
+  "grade_applying": "અરજ કરેલ ગ્રેડ",
+  "date_of_birth": "જન્મ તારીખ",
+  "gender": "જાતિ",
+  "parent_guardian_details": "માતા-પિતા / વાલી વિગત",
+  "parent_name": "માતા-પિતાનું નામ",
+  "phone": "ફોન",
+  "email": "ઇમેઇલ",
+  "address": "સરનામું",
+  "notes": "નોંધ",
+  "submit_inquiry": "પૂછપરછ સબમિટ કરો",
+  "submitting": "સબમિટ થઈ રહ્યું છે...",
+  "inquiry_success": "પૂછપરછ સફળતાપૂર્વક નોંધાઈ",
+  "convert_success": "વિદ્યાર્થીમાં સફળતાપૂર્વક રૂપાંતરિત",
+  "all_statuses": "બધી સ્થિતિ",
+  "columns": {
+    "applicant_name": "અરજદારનું નામ",
+    "grade": "ગ્રેડ",
+    "parent_name": "માતા-પિતાનું નામ",
+    "phone": "ફોન",
+    "status": "સ્થિતિ",
+    "date": "તારીખ",
+    "actions": "ક્રિયા",
+    "view": "જુઓ",
+    "convert": "રૂપાંતરિત"
+  }
+}

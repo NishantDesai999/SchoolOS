@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/fee-configs")
-@PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+@PreAuthorize("hasAnyRole('admin', 'principal')")
 public class FeeConfigController {
 
     private final FeeConfigService feeConfigService;
@@ -27,13 +27,13 @@ public class FeeConfigController {
     }
 
     @PutMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
     public ApiResponse<FeeConfigDto> upsert(@Valid @RequestBody UpsertFeeConfigRequest req) {
         return ApiResponse.ok(feeConfigService.upsert(req));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
     public ApiResponse<Void> delete(@PathVariable UUID id) {
         feeConfigService.delete(id);
         return ApiResponse.ok(null);

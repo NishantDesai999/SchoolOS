@@ -14,5 +14,6 @@ public record UserDto(
         Boolean isActive,
         OffsetDateTime keycloakSyncedAt,
         OffsetDateTime createdAt,
-        OffsetDateTime updatedAt
+        OffsetDateTime updatedAt,
+        OffsetDateTime deletedAt
 ) {}

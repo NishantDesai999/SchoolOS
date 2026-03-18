@@ -10,7 +10,7 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/sections")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAnyRole('admin', 'principal')")
 public class SectionController {
 
     private final SectionService sectionService;
@@ -20,7 +20,7 @@ public class SectionController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'ACCOUNTANT')")
+    @PreAuthorize("hasAnyRole('admin', 'principal')")
     public ApiResponse<List<SectionDto>> list(@RequestParam UUID classId) {
         return ApiResponse.ok(sectionService.listByClass(classId));
     }

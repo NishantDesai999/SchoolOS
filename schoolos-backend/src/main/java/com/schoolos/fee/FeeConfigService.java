@@ -22,6 +22,11 @@ public class FeeConfigService {
         this.dsl = dsl;
     }
 
+    private record FeeConfigRow(
+            UUID id, UUID schoolId, Integer calendarYear, Integer gradeLevel,
+            Boolean isActive, OffsetDateTime createdAt, OffsetDateTime updatedAt, OffsetDateTime deletedAt
+    ) {}
+
     public List<FeeConfigDto> list(Integer yearId, Integer gradeLevel) {
         UUID schoolId = TenantContext.get();
 
@@ -36,19 +41,19 @@ public class FeeConfigService {
             query = query.and(FEE_CONFIGS.GRADE_LEVEL.eq(gradeLevel));
         }
 
-        List<FeeConfigDto> configs = query
+        List<FeeConfigRow> rows = query
                 .orderBy(FEE_CONFIGS.GRADE_LEVEL.asc())
-                .fetchInto(FeeConfigDto.class);
+                .fetchInto(FeeConfigRow.class);
 
         // Load items for each config
-        return configs.stream().map(c -> {
+        return rows.stream().map(c -> {
             List<FeeBreakdownItemDto> items = dsl.selectFrom(FEE_BREAKDOWN_ITEMS)
                     .where(FEE_BREAKDOWN_ITEMS.FEE_CONFIG_ID.eq(c.id()))
                     .and(FEE_BREAKDOWN_ITEMS.DELETED_AT.isNull())
                     .orderBy(FEE_BREAKDOWN_ITEMS.DISPLAY_ORDER.asc())
                     .fetchInto(FeeBreakdownItemDto.class);
             return new FeeConfigDto(c.id(), c.schoolId(), c.calendarYear(), c.gradeLevel(),
-                    c.isActive(), items, c.createdAt(), c.updatedAt());
+                    c.isActive(), items, c.createdAt(), c.updatedAt(), c.deletedAt());
         }).toList();
     }
 

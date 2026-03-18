@@ -1,7 +1,7 @@
 {
   "realm": "schoolos",
   "enabled": true,
-  "displayName": "SchoolOS",
+  "displayName": "School OS",
   "sslRequired": "none",
   "registrationAllowed": false,
   "loginWithEmailAllowed": true,
